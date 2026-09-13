@@ -1,0 +1,11 @@
+{
+  "institution": "IIT-Bombay",
+  "programme": "BTech-CSE",
+  "policy_version": "IIT-Bombay/NEP2020-v2",
+  "max_transfer_credits_percent": 50,
+  "min_cgpa_for_transfer": 7.0,
+  "allow_online_bridge": true,
+  "max_bridge_credits_per_term": 6,
+  "direct_recognition_threshold": 0.90,
+  "bridge_recognition_threshold": 0.60
+}

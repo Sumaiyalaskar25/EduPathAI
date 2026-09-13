@@ -1,0 +1,39 @@
+{
+  "fixture_id": "fixture_002",
+  "description": "State University Data Structures → IIT-Bombay Advanced Algorithms",
+  "source_course": {
+    "code": "CS-201",
+    "name": "Data Structures",
+    "credits": 4.0,
+    "outcomes": [
+      "Implement arrays, linked lists, stacks, and queues",
+      "Implement binary search trees and AVL trees",
+      "Implement hash tables with collision resolution",
+      "Analyze time complexity using Big-O notation"
+    ]
+  },
+  "target_course": {
+    "code": "CS-502",
+    "name": "Advanced Algorithms",
+    "credits": 4.0,
+    "outcomes": [
+      "Implement arrays, linked lists, stacks, and queues",
+      "Implement binary search trees and AVL trees",
+      "Implement hash tables with collision resolution",
+      "Analyze time complexity using Big-O notation",
+      "Perform amortized analysis of dynamic data structures",
+      "Design algorithms using dynamic programming"
+    ]
+  },
+  "expected": {
+    "status": "BRIDGE",
+    "outcome_coverage_min": 0.60,
+    "outcome_coverage_max": 0.75,
+    "missing_outcomes": [
+      "Perform amortized analysis of dynamic data structures",
+      "Design algorithms using dynamic programming"
+    ],
+    "domain_alignment": true,
+    "credit_compatibility": true
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "fixture_id": "fixture_003",
+  "description": "BCA Programming in C → B.Tech Programming & Data Structures",
+  "source_course": {
+    "code": "BCA-101",
+    "name": "Programming in C",
+    "credits": 3.0,
+    "modality": "theory",
+    "outcomes": [
+      "Write C programs using variables, control flow, and functions",
+      "Use pointers and dynamic memory allocation",
+      "Implement basic data structures in C"
+    ]
+  },
+  "target_course": {
+    "code": "CS-101",
+    "name": "Programming & Data Structures",
+    "credits": 4.0,
+    "modality": "theory+lab",
+    "outcomes": [
+      "Write C programs using variables, control flow, and functions",
+      "Use pointers and dynamic memory allocation",
+      "Implement basic data structures in C",
+      "Complete a laboratory project demonstrating data structures"
+    ]
+  },
+  "expected": {
+    "status": "BRIDGE",
+    "outcome_coverage_min": 0.65,
+    "outcome_coverage_max": 0.80,
+    "assessment_match_max": 0.75,
+    "missing_outcomes": [
+      "Complete a laboratory project demonstrating data structures"
+    ],
+    "gap_type": "ASSESSMENT"
+  }
+}

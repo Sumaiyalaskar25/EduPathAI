@@ -1,0 +1,35 @@
+{
+  "fixture_id": "fixture_001",
+  "description": "IIT-Bombay CSE 2024 DBMS → IIT-Bombay CSE 2026 Database Systems",
+  "source_course": {
+    "code": "CS-341",
+    "name": "Database Management Systems",
+    "credits": 4.0,
+    "outcomes": [
+      "Explain the relational model and relational algebra",
+      "Design normalized schemas up to 3NF and BCNF",
+      "Write SQL queries including joins, subqueries, and aggregates",
+      "Implement transactions with ACID properties",
+      "Analyze query execution plans"
+    ]
+  },
+  "target_course": {
+    "code": "CS-501",
+    "name": "Database Systems",
+    "credits": 4.0,
+    "outcomes": [
+      "Explain the relational model and relational algebra",
+      "Design normalized schemas up to 3NF and BCNF",
+      "Write SQL queries including joins, subqueries, and aggregates",
+      "Implement transactions with ACID properties",
+      "Analyze query execution plans"
+    ]
+  },
+  "expected": {
+    "status": "DIRECT",
+    "outcome_coverage_min": 0.90,
+    "domain_alignment": true,
+    "credit_compatibility": true,
+    "prerequisite_status": true
+  }
+}

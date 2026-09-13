@@ -1,0 +1,41 @@
+{
+  "version": "2026-09-01",
+  "resources": [
+    {
+      "id": "nptel-algorithms-2026",
+      "provider": "NPTEL",
+      "title": "Design and Analysis of Algorithms",
+      "url": "https://nptel.ac.in/courses/106/106/106106131/",
+      "competency_tags": ["amortized analysis", "dynamic programming", "greedy algorithms"],
+      "duration_hours": 40,
+      "assessment_available": true,
+      "prerequisites": [],
+      "recognition_status": "FORMAL_BRIDGE",
+      "valid_until": "2027-12-31"
+    },
+    {
+      "id": "vlab-data-structures-2026",
+      "provider": "VLAB",
+      "title": "Data Structures Virtual Lab",
+      "url": "https://vlab.co.in/broad-area-computer-science-and-engineering",
+      "competency_tags": ["data structures", "laboratory", "implementation", "laboratory project"],
+      "duration_hours": 20,
+      "assessment_available": true,
+      "prerequisites": [],
+      "recognition_status": "FORMAL_BRIDGE",
+      "valid_until": "2027-12-31"
+    },
+    {
+      "id": "swayam-dbms-2026",
+      "provider": "SWAYAM",
+      "title": "Database Management Systems",
+      "url": "https://swayam.gov.in/",
+      "competency_tags": ["relational algebra", "SQL", "normalization", "relational model"],
+      "duration_hours": 45,
+      "assessment_available": true,
+      "prerequisites": [],
+      "recognition_status": "FORMAL_BRIDGE",
+      "valid_until": "2027-12-31"
+    }
+  ]
+}
