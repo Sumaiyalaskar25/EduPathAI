@@ -1,5 +1,26 @@
 {
-  "dependencies": {
-    "python": "^0.0.4"
+  "name": "edupathai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EduPathAI frontend monorepo — Student, HEI Reviewer, and Government Analyst applications with shared packages.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev:student": "npm run dev -w @edupathai/student",
+    "dev:hei": "npm run dev -w @edupathai/hei",
+    "dev:government": "npm run dev -w @edupathai/government",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "devDependencies": {
+    "eslint": "9.39.5",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.70.0"
   }
 }

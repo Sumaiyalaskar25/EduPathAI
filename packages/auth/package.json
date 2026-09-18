@@ -1,0 +1,25 @@
+{
+  "name": "@edupathai/auth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "EduPathAI authentication foundation: role types, session contracts, and role-based access helpers.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src"
+  },
+  "devDependencies": {
+    "eslint": "9.39.5",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.70.0"
+  }
+}

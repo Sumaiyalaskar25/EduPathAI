@@ -21,3 +21,15 @@ ENV/
 # OS specific
 .DS_Store
 Thumbs.db
+
+# --- Frontend (Next.js monorepo) ---
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+.eslintcache
+.env
+.env.local
+.env*.local

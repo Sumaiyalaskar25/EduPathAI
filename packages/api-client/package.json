@@ -1,0 +1,29 @@
+{
+  "name": "@edupathai/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Initial shared EduPathAI API client structure. No invented endpoints — only routes implemented by the backend.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@edupathai/api-types": "*",
+    "@tanstack/react-query": "5.103.1"
+  },
+  "devDependencies": {
+    "eslint": "9.39.5",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.70.0"
+  }
+}
