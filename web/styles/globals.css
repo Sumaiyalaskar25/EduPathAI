@@ -1,0 +1,295 @@
+@import "./tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────
+   BASE
+   ───────────────────────────────────────────────────────────── */
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    color: rgb(var(--text-primary));
+    background-color: rgb(var(--bg-canvas));
+    background-image:
+      radial-gradient(ellipse 55% 45% at 12% 8%, rgb(16 185 129 / 0.09) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 45% at 88% 10%, rgb(26 42 82 / 0.11) 0%, transparent 55%),
+      radial-gradient(ellipse 90% 55% at 50% 110%, rgb(var(--bg-canvas-deep) / 0.55) 0%, transparent 70%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 250ms cubic-bezier(0.16, 1, 0.3, 1),
+      color 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   DARK MODE — compatibility layer
+   Force-remap hardcoded Tailwind colors used in components.
+   (bg-white, text-[rgb(26_42_82)], bg-slate-100, chips, etc.)
+   ───────────────────────────────────────────────────────────── */
+@layer base {
+  /* Any element with a *bg-white* class → surface color */
+  .dark [class*="bg-white"] {
+    background-color: rgb(var(--bg-surface) / 0.9) !important;
+  }
+  .dark [class*="hover:bg-white"]:hover {
+    background-color: rgb(var(--bg-elevated)) !important;
+  }
+
+  /* Card canvas tints */
+  .dark [class*="bg-canvas"] {
+    background-color: rgb(var(--bg-canvas-deep)) !important;
+  }
+
+   /* Navy headings flip to a bright but on-brand emerald.
+     Matches the unescaped class name as it appears in the DOM. */
+  .dark [class*="text-[rgb(26_42_82)]"] {
+    color: rgb(110 231 183) !important;
+  } 
+    .dark [class*="from-[rgb(26_42_82)]"],
+  .dark [class*="to-[rgb(14_22_48)]"] {
+    --tw-gradient-from: rgb(16 185 129) !important;
+    --tw-gradient-to: rgb(4 120 87) !important;
+  }
+    /* Summer Bridge card — override its inline amber gradient in dark mode */
+  .dark [data-summer-bridge] {
+    background: linear-gradient(
+      180deg,
+      rgb(120 53 15 / 0.85) 0%,
+      rgb(154 52 18 / 0.75) 100%
+    ) !important;
+    border-color: rgb(245 158 11 / 0.55) !important;
+    box-shadow:
+      0 12px 32px -12px rgb(245 158 11 / 0.55),
+      inset 0 1px 0 rgb(255 255 255 / 0.1) !important;
+  }
+  
+  /* Slate chips / pills */
+  .dark .bg-slate-100 {
+    background-color: rgb(var(--bg-elevated)) !important;
+  }
+  .dark .bg-slate-200 {
+    background-color: rgb(51 65 85) !important;
+  }
+  .dark .bg-slate-900 {
+    background-color: rgb(15 23 42) !important;
+  }
+  .dark .text-slate-700 {
+    color: rgb(203 213 225) !important;
+  }
+  .dark .text-slate-900 {
+    color: rgb(248 250 252) !important;
+  }
+
+  /* Semantic chips → dark tinted versions */
+  .dark .bg-emerald-100 {
+    background-color: rgb(6 78 59) !important;
+  }
+  .dark .text-emerald-800,
+  .dark .text-emerald-900,
+  .dark .text-emerald-950 {
+    color: rgb(167 243 208) !important;
+  }
+  .dark .bg-emerald-50,
+  .dark .bg-emerald-50\/50,
+  .dark .bg-emerald-50\/60,
+  .dark .bg-emerald-50\/70 {
+    background-color: rgb(6 78 59 / 0.35) !important;
+  }
+
+  .dark .bg-amber-100 {
+    background-color: rgb(120 53 15) !important;
+  }
+  .dark .text-amber-800,
+  .dark .text-amber-900,
+  .dark .text-amber-950 {
+    color: rgb(253 230 138) !important;
+  }
+  .dark .bg-amber-50,
+  .dark .bg-amber-50\/50,
+  .dark .bg-amber-50\/60 {
+    background-color: rgb(120 53 15 / 0.35) !important;
+  }
+
+  .dark .bg-rose-100 {
+    background-color: rgb(136 19 55) !important;
+  }
+  .dark .text-rose-800,
+  .dark .text-rose-900 {
+    color: rgb(254 205 211) !important;
+  }
+  .dark .bg-rose-50 {
+    background-color: rgb(136 19 55 / 0.3) !important;
+  }
+
+  .dark .bg-sky-100 {
+    background-color: rgb(12 74 110) !important;
+  }
+  .dark .text-sky-800 {
+    color: rgb(186 230 253) !important;
+  }
+
+  /* Borders with warm tint stay soft in dark */
+  .dark .border-amber-200\/60,
+  .dark .border-amber-200\/80,
+  .dark .border-amber-300\/70,
+  .dark .border-amber-400\/70 {
+    border-color: rgb(180 83 9 / 0.55) !important;
+  }
+  .dark .border-emerald-200,
+  .dark .border-emerald-200\/60,
+  .dark .border-emerald-200\/80 {
+    border-color: rgb(5 150 105 / 0.55) !important;
+  }
+  .dark .border-rose-200 {
+    border-color: rgb(159 18 57 / 0.55) !important;
+  }
+
+  /* SVG strokes/fills that used inline dark slate */
+  .dark svg text {
+    fill: rgb(var(--text-primary));
+  }
+
+  /* Focus rings */
+  .dark *:focus-visible {
+    outline-color: rgb(16 185 129);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   UTILITIES
+   ───────────────────────────────────────────────────────────── */
+@layer utilities {
+  .glass {
+    background-color: rgb(255 253 248 / 0.72);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid rgb(255 255 255 / 0.6);
+    box-shadow:
+      0 8px 32px -8px rgb(80 60 30 / 0.12),
+      0 2px 8px -2px rgb(80 60 30 / 0.06),
+      inset 0 1px 0 rgb(255 255 255 / 0.85);
+  }
+  .dark .glass {
+    background-color: rgb(var(--bg-glass) / 0.7);
+    border-color: rgb(148 163 184 / 0.2);
+    box-shadow:
+      0 8px 32px -8px rgb(0 0 0 / 0.5),
+      0 2px 8px -2px rgb(0 0 0 / 0.35),
+      inset 0 1px 0 rgb(255 255 255 / 0.06);
+  }
+
+  .glass-strong {
+    background-color: rgb(255 253 248 / 0.88);
+    backdrop-filter: blur(28px) saturate(200%);
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    border: 1px solid rgb(255 255 255 / 0.85);
+    box-shadow:
+      0 12px 40px -10px rgb(80 60 30 / 0.16),
+      0 4px 12px -4px rgb(80 60 30 / 0.08),
+      inset 0 1px 0 rgb(255 255 255 / 0.9);
+  }
+  .dark .glass-strong {
+    background-color: rgb(var(--bg-glass) / 0.85);
+    border-color: rgb(148 163 184 / 0.22);
+    box-shadow:
+      0 12px 40px -10px rgb(0 0 0 / 0.6),
+      0 4px 12px -4px rgb(0 0 0 / 0.4),
+      inset 0 1px 0 rgb(255 255 255 / 0.06);
+  }
+
+  .card {
+    background-color: rgb(var(--bg-surface));
+    border: 1px solid rgb(var(--border-subtle));
+    border-radius: var(--radius-2xl);
+    box-shadow:
+      0 2px 6px -1px rgb(80 60 30 / 0.06),
+      0 1px 3px -1px rgb(80 60 30 / 0.04);
+  }
+
+  .card-warm {
+    background: linear-gradient(
+      180deg,
+      rgb(var(--bg-surface)) 0%,
+      rgb(var(--bg-surface-warm)) 100%
+    );
+    border: 1px solid rgb(var(--border-subtle));
+    border-radius: var(--radius-2xl);
+    box-shadow:
+      0 8px 24px -8px rgb(80 60 30 / 0.1),
+      0 2px 6px -2px rgb(80 60 30 / 0.05);
+  }
+  .dark .card-warm {
+    box-shadow:
+      0 8px 24px -8px rgb(0 0 0 / 0.5),
+      0 2px 6px -2px rgb(0 0 0 / 0.3);
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 9999px;
+    border: 1px solid rgb(var(--border-subtle));
+    background-color: rgb(var(--bg-surface) / 0.9);
+    padding: 0.4rem 0.85rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: rgb(var(--text-secondary));
+    letter-spacing: -0.005em;
+  }
+
+  .pill-navy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, rgb(26 42 82) 0%, rgb(14 22 48) 100%);
+    padding: 0.7rem 1.25rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: white;
+    box-shadow:
+      0 12px 32px -10px rgb(26 42 82 / 0.5),
+      inset 0 1px 0 rgb(255 255 255 / 0.15);
+    transition:
+      transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .pill-navy:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 16px 40px -12px rgb(26 42 82 / 0.6),
+      inset 0 1px 0 rgb(255 255 255 / 0.2);
+  }
+  .dark .pill-navy {
+    background: linear-gradient(135deg, rgb(16 185 129) 0%, rgb(4 120 87) 100%);
+    box-shadow:
+      0 12px 32px -10px rgb(16 185 129 / 0.5),
+      inset 0 1px 0 rgb(255 255 255 / 0.2);
+  }
+
+  .brand-mark {
+    background: linear-gradient(135deg, rgb(26 42 82) 0%, rgb(14 22 48) 100%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.15),
+      0 8px 20px -8px rgb(26 42 82 / 0.5);
+  }
+
+  .text-gradient-navy {
+    background: linear-gradient(135deg, rgb(26 42 82) 0%, rgb(14 22 48) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .dark .text-gradient-navy {
+    background: linear-gradient(135deg, rgb(110 231 183) 0%, rgb(16 185 129) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
