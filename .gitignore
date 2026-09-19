@@ -21,3 +21,19 @@ ENV/
 # OS specific
 .DS_Store
 Thumbs.db
+
+# Environment variables
+.env
+.env.local
+
+# Env variants (never commit real secrets)
+# Keep .env.example and .env.local.example
+.env.*
+!.env.example
+!web/.env.local.example
+
+# Logs
+*.log
+
+# Diagnostic outputs
+pathway_response.json

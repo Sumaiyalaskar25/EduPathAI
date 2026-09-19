@@ -3,30 +3,45 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any, Optional
-from uuid import UUID, uuid4
+from typing import Any
+from uuid import uuid4
 
+from services.matching.version_provider import VersionProvider
 from services.schemas import DecisionBundle
 
 
 class DecisionBundleProvider:
-    def __init__(self, db: Any = None):
-        self.db = db
+    """
+    Captures the 13 version strings that impact the decision pipeline.
 
-    async def capture(self, programme: str, institution: str) -> DecisionBundle:
-        """
-        Captures the 13 version strings that impact the decision pipeline.
-        In production, resolves current versions from version_registry table.
-        """
+    Matching-layer versions (embedding model, cross-encoder,
+    retrieval threshold, LLM model, prompt) come from VersionProvider
+    so they stay consistent with the matcher's actual behavior.
+    """
+
+    def __init__(
+        self,
+        db: Any = None,
+        version_provider: VersionProvider | None = None,
+    ) -> None:
+        self.db = db
+        self.version_provider = version_provider or VersionProvider()
+
+    async def capture(
+        self,
+        programme: str,
+        institution: str,
+    ) -> DecisionBundle:
+        vp = self.version_provider
         bundle = DecisionBundle(
             id=uuid4(),
             curriculum_version=f"{institution}/{programme}/2026-v1",
             policy_version=f"{institution}/NEP2020-v2",
-            model_version="gemini-1.5-pro-002",
-            prompt_version="prompt-v3.4.1",
-            embedding_model_version="text-embedding-004",
-            cross_encoder_version="ms-marco-MiniLM-L-6-v2",
-            retrieval_threshold=0.70,
+            model_version=vp.model_version(),
+            prompt_version=vp.prompt_version(),
+            embedding_model_version=vp.embedding_model_version(),
+            cross_encoder_version=vp.cross_encoder_version(),
+            retrieval_threshold=vp.retrieval_threshold(),
             solver_version="ortools-9.10",
             solver_parameters_hash="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
             resource_catalog_version="catalog-2026-09-01",

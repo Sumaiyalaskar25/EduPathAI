@@ -7,6 +7,8 @@ from pydantic import BaseModel
 from uuid import UUID
 
 from services.api.orchestrator import Orchestrator
+import logging
+from services.matching.real import RealMatcher
 from services.matching.stub import StubMatcher
 from services.solver.stub import StubSolver
 from services.bridge.resource_registry import ResourceRegistry
@@ -15,11 +17,18 @@ from services.outbox.outbox import Outbox
 from services.snapshot.bundle_provider import DecisionBundleProvider
 from services.policy.loader import PolicyLoader
 
+log = logging.getLogger(__name__)
+
 app = FastAPI(title="EduPathAI", version="1.0")
 
 # Instantiate components
 bundle_provider = DecisionBundleProvider()
-matcher = StubMatcher()
+try:
+    matcher = RealMatcher()
+    log.info("using RealMatcher")
+except Exception as e:
+    log.warning("RealMatcher unavailable (%s); falling back to StubMatcher", e)
+    matcher = StubMatcher()
 solver = StubSolver()
 ledger = Ledger()
 outbox = Outbox()

@@ -53,7 +53,7 @@ export interface MatchResult {
   prerequisite_status: boolean;
   assessment_match: number;
   credit_compatibility: boolean;
-  domain_align: boolean;
+  domain_alignment: boolean;
   policy_eligibility: boolean;
   evidence_quality: number;
   evidence: EvidenceRef[];

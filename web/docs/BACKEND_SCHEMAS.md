@@ -16,7 +16,7 @@ KMS_KEY_ID=your_key
 CORS_ORIGINS=http://localhost:3000,http://localhost:3001
 
 Frontend web/.env.local:
-NEXT_PUBLIC_API_URL=http://localhost:8080
+NEXT_PUBLIC_API_URL=http://localhost:8000
 
 ## CORS
 
@@ -101,7 +101,7 @@ class MatchResult(BaseModel):
     prerequisite_status: bool
     assessment_match: float
     credit_compatibility: bool
-    domain_align: bool
+    domain_alignment: bool
     policy_eligibility: bool
     evidence_quality: float
     evidence: list[EvidenceRef]
@@ -212,6 +212,7 @@ class AuditRecord(BaseModel):
 5. previous_hash and current_hash required on AuditRecord.
 6. Timestamps: UTC ISO 8601 with Z suffix.
 7. Hashes: lowercase hex, 64 chars. First record uses "GENESIS".
+8. MatchResult field name is `domain_alignment` (not `domain_align`).
 
 ## Sample Response
 
@@ -219,7 +220,7 @@ class AuditRecord(BaseModel):
   "recognition": {"direct": 48, "bridge": 14, "missing": 6, "review": 2, "policy_conflict": 0},
   "gaps": [{"gap_id": "gap-001", "gap_type": "KNOWLEDGE", "description": "Missing Network Flow", "missing_outcomes": ["Max-flow min-cut"]}],
   "pathways": [{"mode": "BALANCED", "terms": 4, "bridge_burden": 0.18, "terms_plan": [{"term_number": 5, "courses": ["CS-401"], "bridges": []}]}],
-  "matches": [{"source_course_id": "CAL-DS-101", "target_course_id": "IIT-ADS-500", "semantic_score": 0.94, "outcome_coverage": 0.91, "prerequisite_status": true, "assessment_match": 0.90, "credit_compatibility": true, "domain_align": true, "policy_eligibility": true, "evidence_quality": 0.88, "evidence": [], "missing_outcomes": []}],
+  "matches": [{"source_course_id": "CAL-DS-101", "target_course_id": "IIT-ADS-500", "semantic_score": 0.94, "outcome_coverage": 0.91, "prerequisite_status": true, "assessment_match": 0.90, "credit_compatibility": true, "domain_alignment": true, "policy_eligibility": true, "evidence_quality": 0.88, "evidence": [], "missing_outcomes": []}],
   "bridges": [{"bridge_id": "br-001", "gap_id": "gap-001", "resource_id": "nptel-algo-3-4", "resource_provider": "NPTEL", "resource_url": "https://nptel.ac.in/courses/106106145", "competency_coverage": 1.0, "duration_hours": 18, "assessment_available": true, "recognition_status": "FORMAL_BRIDGE", "prerequisite_met": true}],
   "trace_id": "pathway-request-9f83b165",
   "decision_id": "dec-9f83b165-a1",

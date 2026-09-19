@@ -430,13 +430,29 @@ edupathai/
 │   │   └── resource_registry.py  # Accredited bridge catalogue & outcome matching
 │   ├── cache/                    # High-throughput caching primitives
 │   │   └── bloom_filter.py       # Space-efficient pre-query filters
-│   ├── matching/                 # AI & semantic matching
-│   │   ├── batch_matcher.py      # High-throughput asynchronous batch processor
-│   │   ├── consensus.py          # Multi-model cross-encoder consensus
-│   │   ├── lsh_matcher.py        # MinHash Locality-Sensitive Hashing
-│   │   ├── minhash_consensus.py  # Fast Jaccard similarity consensus
-│   │   ├── pq_vector_index.py    # Product Quantization approximate index
-│   │   └── stub.py               # Deterministic test match generator
+│   ├── matching/                      # AI & semantic matching (Member 2)
+│   │   ├── real.py                    # RealMatcher - drop-in for StubMatcher
+│   │   ├── stub.py                    # Deterministic fixture-based fallback
+│   │   ├── version_provider.py        # Canonical model version strings
+│   │   ├── circuit_breaker.py         # Per-provider failure isolation
+│   │   ├── cost_tracker.py            # USD + token accounting
+│   │   ├── gateway.py                 # Provider router (breakers + cost + fallback)
+│   │   ├── embedder.py                # 384-dim sentence-transformer embeddings
+│   │   ├── bloom.py                   # Bloom taxonomy comparison
+│   │   ├── cross_encoder.py           # ms-marco reranker (sigmoid-normalized)
+│   │   ├── coverage.py                # Outcome coverage (cross-encoder x Bloom)
+│   │   ├── domain_shard.py            # Rule-based domain classifier
+│   │   ├── fixture_loader.py          # Enriches gold fixtures with bloom/domain
+│   │   ├── consensus.py               # Multi-model cross-encoder consensus
+│   │   ├── lsh_matcher.py             # MinHash Locality-Sensitive Hashing
+│   │   ├── minhash_consensus.py       # Fast Jaccard similarity consensus
+│   │   ├── pq_vector_index.py         # Product Quantization approximate index
+│   │   ├── batch_matcher.py           # High-throughput asynchronous batch processor
+│   │   └── providers/                 # LLM provider adapters
+│   │       ├── base.py                # Canonical Provider Protocol
+│   │       ├── local.py               # Deterministic no-op fallback
+│   │       ├── gemini.py              # Google Gemini adapter
+│   │       └── openai_compatible.py   # OpenAI / DeepSeek / Kimi adapter
 │   ├── outbox/                   # Reliable asynchronous messaging
 │   │   └── outbox.py             # Transactional Outbox pattern implementation
 │   ├── policy/                   # Institutional policy engine
@@ -811,7 +827,7 @@ EduPathAI enforces a zero-regression testing regime across 54 automated test cas
 
 ```
 test/
-├── unit/                       # 44 Automated Unit Tests (Passing)
+├── unit/                       # 173 Automated Unit Tests (Passing)
 │   ├── test_bitset_prerequisites.py  # 64-bit word operations & AND/OR masking
 │   ├── test_bloom_filter.py          # Pre-query filter false-positive rates
 │   ├── test_consensus.py             # Cross-model agreement and dispute logic
@@ -821,7 +837,7 @@ test/
 │   ├── test_milp.py                  # OR-Tools CBC constraint satisfaction
 │   ├── test_pq_vector_index.py       # Product Quantization sub-space search
 │   └── test_validator.py             # Independent feasibility validation rules
-└── integration/                # 10 Automated Integration Tests (Passing)
+└── integration/                # 21 Automated Integration Tests (Passing)
     ├── test_breakthrough_pipeline.py # End-to-end multi-stage pipeline execution
     ├── test_decision_loop.py         # Fixtures -> Recognizer -> Bridges -> Audit
     ├── test_pathway_solve.py         # Multi-objective pathway generation

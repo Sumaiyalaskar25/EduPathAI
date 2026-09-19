@@ -11,7 +11,7 @@ alembic==1.13.2
 
 # Vector / AI
 pgvector==0.3.0
-google-generativeai==0.7.2
+google-generativeai==0.8.4
 sentence-transformers==3.0.1
 openai==1.35.0
 
@@ -19,9 +19,9 @@ openai==1.35.0
 ortools==9.10.4067
 
 # Observability
-opentelemetry-api==1.25.0
-opentelemetry-sdk==1.25.0
-opentelemetry-exporter-otlp==1.25.0
+# NOTE: opentelemetry-* removed. Version 1.27 and below require protobuf<5.0,
+# which conflicts with ortools (>=5.26.1) and google-generativeai (>=5.29.6).
+# Re-add opentelemetry-* >=1.29.0 when needed - it accepts protobuf 5.x.
 prometheus-client==0.20.0
 
 # Config
@@ -32,3 +32,6 @@ jsonschema==4.22.0
 pytest==8.2.2
 pytest-asyncio==0.23.7
 httpx==0.27.0
+
+# Protobuf pin: satisfies ortools 9.10 + google-generativeai 0.8.4
+protobuf==5.29.5
