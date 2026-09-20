@@ -1,0 +1,67 @@
+{
+  "students": [
+    {
+      "external_ref": "student-001",
+      "full_name": "Aarav Sharma",
+      "apaar_masked": "9081 **** 2201",
+      "abc_id": "ABC-2026-8841-2201",
+      "programme": "B.Tech Computer Science & Engineering",
+      "institution": "University of Calcutta",
+      "target_institution": "IIT Bombay",
+      "target_programme": "BTech-CSE",
+      "enrolled_on": "2022-08-01"
+    },
+    {
+      "external_ref": "student-002",
+      "full_name": "Priya Menon",
+      "apaar_masked": "7734 **** 5512",
+      "abc_id": "ABC-2026-7734-5512",
+      "programme": "B.Tech Information Technology",
+      "institution": "Anna University",
+      "target_institution": "IIT Delhi",
+      "target_programme": "BTech-IT",
+      "enrolled_on": "2022-08-01"
+    },
+    {
+      "external_ref": "student-003",
+      "full_name": "Rohan Iyer",
+      "apaar_masked": "5521 **** 8843",
+      "abc_id": "ABC-2026-5521-8843",
+      "programme": "B.Tech Electronics & Communication",
+      "institution": "NIT Trichy",
+      "target_institution": "IIT Madras",
+      "target_programme": "BTech-ECE",
+      "enrolled_on": "2022-08-01"
+    },
+    {
+      "external_ref": "student-004",
+      "full_name": "Sneha Patel",
+      "apaar_masked": "3390 **** 1187",
+      "abc_id": "ABC-2026-3390-1187",
+      "programme": "B.Tech Computer Science & Engineering",
+      "institution": "VIT Vellore",
+      "target_institution": "IIT Kanpur",
+      "target_programme": "BTech-CSE",
+      "enrolled_on": "2022-08-01"
+    },
+    {
+      "external_ref": "student-005",
+      "full_name": "Kabir Singh",
+      "apaar_masked": "6602 **** 9934",
+      "abc_id": "ABC-2026-6602-9934",
+      "programme": "B.Tech Computer Science & Engineering",
+      "institution": "BITS Pilani",
+      "target_institution": "IIT Bombay",
+      "target_programme": "BTech-CSE",
+      "enrolled_on": "2022-08-01"
+    }
+  ],
+  "reviewers": [
+    { "external_ref": "reviewer-001", "full_name": "Prof. S. Sen", "role_title": "BoS Convener", "institution": "IIT Bombay" },
+    { "external_ref": "reviewer-002", "full_name": "Prof. R. Iyer", "role_title": "BoS Member", "institution": "IIT Delhi" },
+    { "external_ref": "reviewer-003", "full_name": "Prof. M. Gupta", "role_title": "BoS Member", "institution": "IIT Kanpur" }
+  ],
+  "ministry_officers": [
+    { "external_ref": "officer-001", "full_name": "Dr. A. Krishnan", "role_title": "State Nodal Officer", "institution": "Ministry of Education" }
+  ]
+}

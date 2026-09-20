@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any
-from uuid import uuid4
+from typing import Any, Optional
+from uuid import UUID, uuid4
 
 from services.matching.version_provider import VersionProvider
 from services.schemas import DecisionBundle
@@ -70,3 +70,31 @@ class DecisionBundleProvider:
             )
 
         return bundle
+
+    async def get(self, bundle_id: UUID) -> Optional[DecisionBundle]:
+        """Fetch a previously captured bundle by id — powers 'replay exact
+        decision state' (GET /v1/audit/{id}/replay). None in in-memory mode."""
+        if self.db is None:
+            return None
+        row = await self.db.fetchrow(
+            "SELECT * FROM decision_bundles WHERE id = $1", bundle_id
+        )
+        if not row:
+            return None
+        return DecisionBundle(
+            id=row["id"],
+            curriculum_version=row["curriculum_version"],
+            policy_version=row["policy_version"],
+            model_version=row["model_version"],
+            prompt_version=row["prompt_version"],
+            embedding_model_version=row["embedding_model_version"],
+            cross_encoder_version=row["cross_encoder_version"],
+            retrieval_threshold=float(row["retrieval_threshold"]),
+            solver_version=row["solver_version"],
+            solver_parameters_hash=row["solver_parameters_hash"],
+            resource_catalog_version=row["resource_catalog_version"],
+            ontology_version=row["ontology_version"],
+            ruleset_commit=row["ruleset_commit"],
+            tool_definitions_hash=row["tool_definitions_hash"],
+            captured_at=row["captured_at"],
+        )

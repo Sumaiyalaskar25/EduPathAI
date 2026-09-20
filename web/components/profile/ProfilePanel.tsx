@@ -1,26 +1,22 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useState } from "react";
+import { toast } from "sonner";
 import {
   ShieldCheck,
   BadgeCheck,
   Fingerprint,
-  Calendar,
-  MapPin,
-  Lock,
   CheckCircle2,
   Clock,
   XCircle,
   FileText,
   Download,
+  Loader2,
 } from "lucide-react";
-import {
-  DEMO_IDENTITY,
-  DEMO_CONSENTS,
-  DEMO_DECISIONS,
-  DEMO_SECURITY,
-  type DecisionRecord,
-} from "@/lib/constants/demo-profile";
+import type { LucideIcon } from "lucide-react";
+import type { StudentProfile, DecisionHistoryItem } from "@/lib/api/types";
+import { downloadStudentExport, downloadBlob } from "@/lib/api/client";
 import { cn } from "@/lib/utils/cn";
 
 /* ── helpers ── */
@@ -85,9 +81,9 @@ function Section({
 
 /* ── BLOCK 1: Identity card ── */
 
-function IdentityCard() {
-  const I = DEMO_IDENTITY;
-  const initials = I.fullName
+function IdentityCard({ identity }: { identity: StudentProfile["identity"] }) {
+  const I = identity;
+  const initials = I.full_name
     .split(" ")
     .map((n) => n[0])
     .join("")
@@ -118,7 +114,7 @@ function IdentityCard() {
         {/* Info */}
         <div className="min-w-0 flex-1">
           <h1 className="font-display text-[28px] font-bold leading-none tracking-tight text-text-primary">
-            {I.fullName}
+            {I.full_name}
           </h1>
           <p className="mt-2 text-[13.5px] font-medium text-text-secondary">
             {I.programme}
@@ -131,15 +127,15 @@ function IdentityCard() {
             </span>
             <span className="pill">
               <FileText className="h-3.5 w-3.5" />
-              {I.abcId}
+              {I.abc_id}
             </span>
-            {I.digilockerLinked && (
+            {I.digilocker_linked && (
               <span className="pill">
                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
                 DigiLocker linked
               </span>
             )}
-            {I.biometricVerified && (
+            {I.biometric_verified && (
               <span className="pill">
                 <Fingerprint className="h-3.5 w-3.5 text-emerald-600" />
                 Aadhaar e-Sign verified
@@ -164,7 +160,7 @@ function IdentityCard() {
               Targeting
             </p>
             <p className="mt-1 text-[13px] font-semibold text-text-primary">
-              {I.targetInstitution}
+              {I.target_institution}
             </p>
           </div>
         </div>
@@ -175,11 +171,11 @@ function IdentityCard() {
 
 /* ── BLOCK 2: Consents ── */
 
-function ConsentsBlock() {
+function ConsentsBlock({ consents }: { consents: StudentProfile["consents"] }) {
   return (
     <Section label="DPDP Act 2023" title="Consent Log" delay={0.15}>
       <ul className="space-y-3">
-        {DEMO_CONSENTS.map((c, i) => (
+        {consents.map((c, i) => (
           <motion.li
             key={c.id}
             initial={{ opacity: 0, y: 6 }}
@@ -203,9 +199,9 @@ function ConsentsBlock() {
                 {c.purpose}
               </p>
               <div className="mt-2 flex items-center gap-3 text-[11px] font-medium text-text-muted">
-                <span>Granted {fmtDate(c.grantedAt)}</span>
+                <span>Granted {fmtDate(c.granted_at)}</span>
                 <span className="text-border-strong">·</span>
-                <span>Expires {fmtDate(c.expiresAt)}</span>
+                <span>{c.expires_at ? `Expires ${fmtDate(c.expires_at)}` : "No expiry"}</span>
               </div>
             </div>
 
@@ -229,76 +225,78 @@ function ConsentsBlock() {
 
 /* ── BLOCK 3: Decisions ── */
 
-const STATUS_STYLE: Record<
-  DecisionRecord["status"],
-  { bg: string; fg: string; icon: typeof Clock }
-> = {
+const STATUS_STYLE: Record<string, { bg: string; fg: string; icon: typeof Clock }> = {
   APPROVED: { bg: "bg-emerald-100", fg: "text-emerald-800", icon: CheckCircle2 },
   PENDING: { bg: "bg-amber-100", fg: "text-amber-900", icon: Clock },
-  REVIEW: { bg: "bg-rose-100", fg: "text-rose-800", icon: XCircle },
+  REJECTED: { bg: "bg-rose-100", fg: "text-rose-800", icon: XCircle },
+  CONTESTED: { bg: "bg-rose-100", fg: "text-rose-800", icon: XCircle },
 };
+const DEFAULT_STATUS_STYLE = STATUS_STYLE.PENDING;
 
-function DecisionsBlock() {
+function DecisionsBlock({ decisions }: { decisions: DecisionHistoryItem[] }) {
   return (
     <Section label="Audit Trail" title="Decision History" delay={0.25}>
-      <ul className="space-y-3">
-        {DEMO_DECISIONS.map((d, i) => {
-          const s = STATUS_STYLE[d.status];
-          const Icon = s.icon;
-          return (
-            <motion.li
-              key={d.id}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 + i * 0.05, duration: 0.4 }}
-              className="group grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border border-border-subtle bg-white/70 p-5 transition-all hover:border-emerald-200 hover:shadow-sm"
-            >
-              <div
-                className={cn(
-                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
-                  s.bg
-                )}
+      {decisions.length === 0 ? (
+        <p className="text-[12.5px] text-text-secondary">No decisions yet.</p>
+      ) : (
+        <ul className="space-y-3">
+          {decisions.map((d, i) => {
+            const s = STATUS_STYLE[d.status] ?? DEFAULT_STATUS_STYLE;
+            const Icon = s.icon;
+            return (
+              <motion.li
+                key={d.decision_id}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 + i * 0.05, duration: 0.4 }}
+                className="group grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border border-border-subtle bg-white/70 p-5 transition-all hover:border-emerald-200 hover:shadow-sm"
               >
-                <Icon className={cn("h-4 w-4", s.fg)} />
-              </div>
-
-              <div className="min-w-0">
-                <p className="truncate text-[13.5px] font-semibold text-text-primary">
-                  {d.summary}
-                </p>
-                <div className="mt-1 flex items-center gap-3 text-[11px] font-medium text-text-muted">
-                  <span className="font-mono">{d.decisionId}</span>
-                  <span className="text-border-strong">·</span>
-                  <span>{d.auditor}</span>
+                <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full", s.bg)}>
+                  <Icon className={cn("h-4 w-4", s.fg)} />
                 </div>
-              </div>
 
-              <div className="flex shrink-0 flex-col items-end gap-1">
-                <span
-                  className={cn(
-                    "rounded-full px-2.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider",
-                    s.bg,
-                    s.fg
-                  )}
-                >
-                  {d.status}
-                </span>
-                <span className="font-mono text-[10.5px] text-text-muted">
-                  {fmtDateTime(d.decidedAt)}
-                </span>
-              </div>
-            </motion.li>
-          );
-        })}
-      </ul>
+                <div className="min-w-0">
+                  <p className="truncate text-[13.5px] font-semibold text-text-primary">{d.summary}</p>
+                  <div className="mt-1 flex items-center gap-3 text-[11px] font-medium text-text-muted">
+                    <span className="font-mono">{d.decision_id.slice(0, 14)}…</span>
+                    <span className="text-border-strong">·</span>
+                    <span>{d.auditor}</span>
+                  </div>
+                </div>
+
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <span className={cn("rounded-full px-2.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider", s.bg, s.fg)}>
+                    {d.status}
+                  </span>
+                  <span className="font-mono text-[10.5px] text-text-muted">{fmtDateTime(d.decided_at)}</span>
+                </div>
+              </motion.li>
+            );
+          })}
+        </ul>
+      )}
     </Section>
   );
 }
 
 /* ── BLOCK 4: Security ── */
 
-function SecurityBlock() {
-  const S = DEMO_SECURITY;
+function SecurityBlock({ security, externalRef }: { security: StudentProfile["security"]; externalRef: string }) {
+  const S = security;
+  const [downloading, setDownloading] = useState(false);
+
+  const onDownload = async () => {
+    setDownloading(true);
+    try {
+      const blob = await downloadStudentExport(externalRef);
+      downloadBlob(blob, `edupathai-export-${externalRef}.json`);
+    } catch {
+      toast.error("Could not generate your data export.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 10 }}
@@ -316,43 +314,17 @@ function SecurityBlock() {
       </header>
 
       <ul className="mt-6 flex-1 space-y-4">
-        <Row
-          icon={Lock}
-          label="MFA enabled"
-          value={S.mfaEnabled ? "Yes" : "No"}
-          tone={S.mfaEnabled ? "good" : "warn"}
-        />
-        <Row
-          icon={ShieldCheck}
-          label="Hash chain"
-          value={S.chainIntegrity}
-          tone="good"
-        />
-        <Row
-          icon={Clock}
-          label="Last sign-in"
-          value={fmtDateTime(S.lastSignIn)}
-        />
-        <Row
-          icon={MapPin}
-          label="Location"
-          value={S.lastSignInLocation}
-        />
-        <Row
-          icon={Calendar}
-          label="Active sessions"
-          value={String(S.sessionCount)}
-        />
-        <Row
-          icon={FileText}
-          label="Archived raw docs"
-          value={`${S.rawDocsArchived} files`}
-        />
+        <Row icon={ShieldCheck} label="Hash chain" value={S.chain_integrity} tone={S.chain_integrity.includes("Verified") ? "good" : "warn"} />
+        <Row icon={FileText} label="Recorded decisions" value={`${S.raw_docs_archived}`} />
       </ul>
 
-      <button className="mt-6 flex w-full items-center justify-between gap-2 rounded-full border border-border-subtle bg-white px-5 py-3.5 text-[13px] font-semibold text-text-primary transition-colors hover:bg-canvas">
+      <button
+        onClick={onDownload}
+        disabled={downloading}
+        className="mt-6 flex w-full items-center justify-between gap-2 rounded-full border border-border-subtle bg-white px-5 py-3.5 text-[13px] font-semibold text-text-primary transition-colors hover:bg-canvas disabled:opacity-60"
+      >
         <span className="flex items-center gap-2">
-          <Download className="h-4 w-4" />
+          {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
           Download my data (DPDP)
         </span>
         <span className="text-text-muted">→</span>
@@ -367,7 +339,7 @@ function Row({
   value,
   tone,
 }: {
-  icon: typeof Lock;
+  icon: LucideIcon;
   label: string;
   value: string;
   tone?: "good" | "warn";
@@ -396,18 +368,18 @@ function Row({
 
 /* ── MAIN ── */
 
-export function ProfilePanel() {
+export function ProfilePanel({ profile, externalRef }: { profile: StudentProfile; externalRef: string }) {
   return (
     <div className="space-y-5">
-      <IdentityCard />
+      <IdentityCard identity={profile.identity} />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
-          <ConsentsBlock />
-          <DecisionsBlock />
+          <ConsentsBlock consents={profile.consents} />
+          <DecisionsBlock decisions={profile.decisions} />
         </div>
         <div>
-          <SecurityBlock />
+          <SecurityBlock security={profile.security} externalRef={externalRef} />
         </div>
       </div>
     </div>

@@ -186,3 +186,257 @@ export const STATUS_TONE_MAP: Record<RecognitionStatus, RecognitionTone> = {
   REVIEW: { tone: "review", label: "Review" },
   POLICY_CONFLICT: { tone: "conflict", label: "Policy Conflict" },
 };
+
+/* ─────────── Auth ─────────── */
+
+export type IdentityMode = "learner" | "bos" | "ministry";
+
+export interface VerifyRequest {
+  mode: IdentityMode;
+  identifier: string;
+  consent: boolean;
+}
+
+export interface VerifyResponse {
+  token: string;
+  role: IdentityMode;
+  external_ref: string;
+  display_name: string;
+  institution: string | null;
+  programme: string | null;
+  target_institution: string | null;
+  target_programme: string | null;
+}
+
+/* ─────────── Student profile ─────────── */
+
+export interface ConsentEntry {
+  id: string;
+  scope: string;
+  purpose: string;
+  granted_at: string;
+  expires_at: string | null;
+  active: boolean;
+}
+
+export interface DecisionHistoryItem {
+  decision_id: string;
+  summary: string;
+  status: string;
+  decided_at: string;
+  auditor: string;
+}
+
+export interface StudentProfile {
+  identity: {
+    full_name: string;
+    apaar: string;
+    abc_id: string;
+    programme: string;
+    institution: string;
+    target_institution: string;
+    enrolled_on: string;
+    digilocker_linked: boolean;
+    biometric_verified: boolean;
+  };
+  consents: ConsentEntry[];
+  decisions: DecisionHistoryItem[];
+  security: {
+    chain_integrity: string;
+    raw_docs_archived: number;
+  };
+}
+
+/* ─────────── Course / Bridge detail ─────────── */
+
+export interface CourseDetail {
+  code: string;
+  name: string;
+  credits: number;
+  modality: string;
+  description: string;
+  competencies: string[];
+  recognitionStatus: RecognitionStatus | null;
+  mappedFrom: { source_course: string; similarity: number } | null;
+}
+
+export interface BridgeDetail {
+  id: string;
+  gap_id: string;
+  resource_id: string;
+  resource_provider: string;
+  resource_url: string;
+  competency_coverage: number;
+  duration_hours: number;
+  assessment_available: boolean;
+  recognition_status: BridgeMode;
+  prerequisite_met: boolean;
+  enrolled: boolean;
+  gap: { gap_type: GapType; description: string; missing_outcomes: string[] } | null;
+}
+
+/* ─────────── HEI (Board of Studies) ─────────── */
+
+export type HeiDecisionStatus = "PENDING" | "APPROVED" | "REJECTED" | "ESCALATED" | "CONTESTED";
+
+export interface HeiReviewItem {
+  id: string;
+  decisionId: string;
+  studentName: string;
+  studentProgramme: string;
+  sourceInstitution: string;
+  targetInstitution: string;
+  courses: string;
+  aiRecommendation: "DIRECT" | "BRIDGE" | "MISSING" | "REVIEW";
+  confidence: number;
+  bridgeRequired: boolean;
+  submittedAt: string;
+  age: string;
+  priority: "high" | "normal" | "low";
+  status: HeiDecisionStatus;
+}
+
+export interface HeiQueueResponse {
+  items: HeiReviewItem[];
+  stats: { pending: number; approvedToday: number; rejectedToday: number; avgReviewTime: string };
+}
+
+export interface HeiApprovedRecord {
+  id: string;
+  decisionId: string;
+  studentName: string;
+  studentProgramme: string;
+  sourceInstitution: string;
+  targetInstitution: string;
+  courses: string;
+  outcome: "APPROVED" | "REJECTED" | "CONTESTED";
+  bridgeRequired: boolean;
+  decidedAt: string;
+  reviewer: string;
+  reviewDuration: string;
+}
+
+export interface HeiApprovedResponse {
+  items: HeiApprovedRecord[];
+  stats: {
+    approvedThisWeek: number;
+    rejectedThisWeek: number;
+    escalatedThisWeek: number;
+    avgReviewDuration: string;
+    approvalRate: number;
+  };
+}
+
+export interface HeiInstitution {
+  id: string;
+  name: string;
+  short_name: string;
+  shortName: string;
+  city: string;
+  state: string;
+  type: string;
+  naac: string;
+  status: "active" | "pending" | "paused";
+  joined_at: string;
+  studentsActive: number;
+  decisionsThisMonth: number;
+  recognitionRate: number;
+  avgReviewTime: string;
+}
+
+export interface HeiInstitutionsResponse {
+  items: HeiInstitution[];
+  stats: {
+    total: number;
+    active: number;
+    pending: number;
+    paused: number;
+    totalStudents: number;
+    totalDecisionsThisMonth: number;
+  };
+}
+
+/* ─────────── Gov (Ministry) ─────────── */
+
+export interface MobilityFlow {
+  source: string;
+  target: string;
+  students: number;
+  recognition: number;
+}
+
+export interface FrictionCourse {
+  course: string;
+  bridgeRate: number;
+  missingRate: number;
+  decisions: number;
+}
+
+export interface TrendPoint {
+  month: string;
+  decisions: number;
+  recognition: number;
+}
+
+export interface RegionSignal {
+  state: string;
+  students: number;
+  heis: number;
+  recognition: number;
+}
+
+export interface PolicySignal {
+  id: string;
+  severity: "critical" | "attention" | "informational";
+  title: string;
+  description: string;
+  affectedInstitutions: number;
+}
+
+export interface GovAggregate {
+  stats: {
+    totalStudents: number;
+    heisIntegrated: number;
+    totalDecisions: number;
+    recognitionRate: number;
+  };
+  mobilityFlows: MobilityFlow[];
+  frictionCourses: FrictionCourse[];
+  trend: TrendPoint[];
+  regionSignals: RegionSignal[];
+  policySignals: PolicySignal[];
+}
+
+export interface SankeyNode {
+  id: string;
+  label: string;
+  type: "source" | "target";
+  students: number;
+}
+
+export interface SankeyLink {
+  source: string;
+  target: string;
+  students: number;
+  recognition: number;
+}
+
+export interface GovMobility {
+  nodes: SankeyNode[];
+  links: SankeyLink[];
+  monthlyTrend: TrendPoint[];
+}
+
+export interface PolicyOverride {
+  id: string;
+  institution: string;
+  programme: string;
+  policy_key: string;
+  policy_value: Record<string, unknown>;
+  updated_by: string;
+  updated_at: string;
+}
+
+export interface GovPolicyResponse {
+  overrides: PolicyOverride[];
+}

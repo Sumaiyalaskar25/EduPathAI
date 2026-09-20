@@ -36,7 +36,7 @@ class Outbox:
             VALUES ($1, $2, $3, $4, NOW(), NOW())
             ON CONFLICT (topic, event_key) DO NOTHING
             """,
-            event_id, topic, event_key, json.dumps(payload),
+            event_id, topic, event_key, payload,
         )
         return event_id
 

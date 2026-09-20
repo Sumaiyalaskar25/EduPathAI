@@ -40,12 +40,12 @@ function pct(n: number): string {
 
 /* ───── 1. HERO STATS ───── */
 
-function HeroStats() {
+function HeroStats({ stats }: { stats: { totalStudents: number; heisIntegrated: number; totalDecisions: number; recognitionRate: number } }) {
   const items = [
-    { label: "Students enrolled",  value: formatNum(DEMO_GOV_STATS.totalStudents),   Icon: Users,        tone: "navy" },
-    { label: "HEIs integrated",    value: DEMO_GOV_STATS.heisIntegrated,             Icon: Building2,    tone: "emerald" },
-    { label: "Credits transferred",value: formatNum(DEMO_GOV_STATS.creditsTransferred), Icon: TrendingUp, tone: "emerald" },
-    { label: "Recognition rate",   value: pct(DEMO_GOV_STATS.recognitionRate),       Icon: Target,       tone: "amber" },
+    { label: "Students enrolled", value: formatNum(stats.totalStudents), Icon: Users, tone: "navy" },
+    { label: "HEIs integrated", value: stats.heisIntegrated, Icon: Building2, tone: "emerald" },
+    { label: "Total decisions", value: formatNum(stats.totalDecisions), Icon: TrendingUp, tone: "emerald" },
+    { label: "Recognition rate", value: pct(stats.recognitionRate), Icon: Target, tone: "amber" },
   ] as const;
 
   const toneMap = {
@@ -86,7 +86,7 @@ function HeroStats() {
 
 /* ───── 2. MOBILITY FLOWS ───── */
 
-function MobilityFlows() {
+function MobilityFlows({ flows = DEMO_MOBILITY_FLOWS }: { flows?: typeof DEMO_MOBILITY_FLOWS }) {
   return (
     <motion.section
       initial={{ opacity: 0, y: 8 }}
@@ -104,7 +104,7 @@ function MobilityFlows() {
           </h2>
         </div>
         <span className="hidden shrink-0 rounded-full border border-border-subtle px-3 py-1.5 text-[11px] font-medium text-text-secondary md:inline-flex">
-          {DEMO_MOBILITY_FLOWS.length} pairs
+          {flows.length} pairs
         </span>
       </header>
 
@@ -122,7 +122,7 @@ function MobilityFlows() {
       </div>
 
       <ul className="divide-y divide-border-subtle/50">
-        {DEMO_MOBILITY_FLOWS.map((flow, i) => (
+        {flows.map((flow, i) => (
           <motion.li
             key={`${flow.source}-${flow.target}`}
             initial={{ opacity: 0, x: -6 }}
@@ -142,8 +142,8 @@ function MobilityFlows() {
                   flow.recognition >= 0.85
                     ? "bg-emerald-100 text-emerald-800"
                     : flow.recognition >= 0.70
-                    ? "bg-amber-100 text-amber-900"
-                    : "bg-rose-100 text-rose-800"
+                      ? "bg-amber-100 text-amber-900"
+                      : "bg-rose-100 text-rose-800"
                 )}
               >
                 {pct(flow.recognition)}
@@ -166,7 +166,7 @@ function MobilityFlows() {
 
 /* ───── 3. FRICTION HEATMAP ───── */
 
-function FrictionHeatmap() {
+function FrictionHeatmap({ frictionCourses = DEMO_FRICTION_COURSES }: { frictionCourses?: typeof DEMO_FRICTION_COURSES }) {
   return (
     <motion.section
       initial={{ opacity: 0, y: 8 }}
@@ -187,7 +187,7 @@ function FrictionHeatmap() {
       </header>
 
       <ul className="mt-6 flex-1 space-y-4">
-        {DEMO_FRICTION_COURSES.map((c, i) => (
+        {frictionCourses.map((c, i) => (
           <motion.li
             key={c.course}
             initial={{ opacity: 0, x: -6 }}
@@ -216,8 +216,8 @@ function FrictionHeatmap() {
                   c.bridgeRate >= 0.6
                     ? "bg-rose-500"
                     : c.bridgeRate >= 0.3
-                    ? "bg-amber-500"
-                    : "bg-emerald-500"
+                      ? "bg-amber-500"
+                      : "bg-emerald-500"
                 )}
               />
             </div>
@@ -238,8 +238,11 @@ function FrictionHeatmap() {
 
 /* ───── 4. TREND ───── */
 
-function MobilityTrend() {
-  const max = Math.max(...DEMO_MOBILITY_TREND.map((t) => t.decisions));
+function MobilityTrend({ trend = DEMO_MOBILITY_TREND }: { trend?: typeof DEMO_MOBILITY_TREND }) {
+  const max = Math.max(...trend.map((t) => t.decisions), 1);
+  const first = trend[0]?.decisions ?? 0;
+  const last = trend[trend.length - 1]?.decisions ?? 0;
+  const growthPct = first > 0 ? Math.round(((last - first) / first) * 100) : null;
 
   return (
     <motion.section
@@ -259,7 +262,7 @@ function MobilityTrend() {
 
       <div className="mt-8 flex-1">
         <div className="flex h-full items-end gap-3">
-          {DEMO_MOBILITY_TREND.map((t, i) => {
+          {trend.map((t, i) => {
             const h = (t.decisions / max) * 100;
             return (
               <div key={t.month} className="flex flex-1 flex-col items-center gap-2">
@@ -289,11 +292,11 @@ function MobilityTrend() {
         <div className="flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-emerald-600" />
           <span className="text-[12px] font-semibold text-text-primary">
-            +203% since March
+            {growthPct === null ? "Trend building up" : `${growthPct >= 0 ? "+" : ""}${growthPct}% vs first month`}
           </span>
         </div>
         <span className="font-mono text-[11px] tabular-nums text-text-muted">
-          {DEMO_MOBILITY_TREND[DEMO_MOBILITY_TREND.length - 1].decisions.toLocaleString("en-IN")} this month
+          {(trend[trend.length - 1]?.decisions ?? 0).toLocaleString("en-IN")} this month
         </span>
       </div>
     </motion.section>
@@ -302,8 +305,8 @@ function MobilityTrend() {
 
 /* ───── 5. REGION SIGNALS ───── */
 
-function RegionSignals() {
-  const max = Math.max(...DEMO_REGION_SIGNALS.map((r) => r.students));
+function RegionSignals({ regionSignals = DEMO_REGION_SIGNALS }: { regionSignals?: typeof DEMO_REGION_SIGNALS }) {
+  const max = Math.max(...regionSignals.map((r) => r.students), 1);
 
   return (
     <motion.section
@@ -322,7 +325,7 @@ function RegionSignals() {
       </header>
 
       <ul className="mt-6 space-y-3">
-        {DEMO_REGION_SIGNALS.map((r, i) => {
+        {regionSignals.map((r, i) => {
           const w = (r.students / max) * 100;
           return (
             <motion.li
@@ -356,8 +359,8 @@ function RegionSignals() {
                   r.recognition >= 0.75
                     ? "text-emerald-700"
                     : r.recognition >= 0.65
-                    ? "text-amber-700"
-                    : "text-rose-700"
+                      ? "text-amber-700"
+                      : "text-rose-700"
                 )}
               >
                 {pct(r.recognition)}
@@ -396,7 +399,7 @@ const SEVERITY_MAP: Record<
   },
 };
 
-function PolicySignals() {
+function PolicySignals({ policySignals = DEMO_POLICY_SIGNALS }: { policySignals?: typeof DEMO_POLICY_SIGNALS }) {
   return (
     <motion.section
       initial={{ opacity: 0, y: 8 }}
@@ -414,7 +417,7 @@ function PolicySignals() {
       </header>
 
       <ul className="mt-6 space-y-3">
-        {DEMO_POLICY_SIGNALS.map((sig, i) => {
+        {policySignals.map((sig, i) => {
           const s = SEVERITY_MAP[sig.severity];
           const Icon = s.Icon;
           return (
@@ -543,22 +546,24 @@ function SystemHealth() {
 
 /* ───── MAIN ───── */
 
-export function MobilityIntelligence() {
+import type { GovAggregate } from "@/lib/api/types";
+
+export function MobilityIntelligence({ data }: { data: GovAggregate }) {
   return (
     <div className="space-y-5">
-      <HeroStats />
+      <HeroStats stats={data.stats} />
 
-      <MobilityFlows />
+      <MobilityFlows flows={data.mobilityFlows} />
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <FrictionHeatmap />
-        <MobilityTrend />
+        <FrictionHeatmap frictionCourses={data.frictionCourses} />
+        <MobilityTrend trend={data.trend} />
       </div>
 
-      <RegionSignals />
+      <RegionSignals regionSignals={data.regionSignals} />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <PolicySignals />
+        <PolicySignals policySignals={data.policySignals} />
         <SystemHealth />
       </div>
     </div>

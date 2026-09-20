@@ -246,6 +246,9 @@ class AuditRecord:
     human_decision: Optional[str]
     trace_id: str                  # OpenTelemetry trace — NOT the same as audit id
     timestamp: datetime
+    # Set only on human-review ledger entries (HEI approve/reject).
+    auditor_name: Optional[str] = None
+    auditor_role: Optional[str] = None
 
 
 # ============================================================
@@ -269,3 +272,6 @@ class PathwayResponse:
     decision_id: UUID
     audit_event_ids: list[UUID]
     bundle: DecisionBundle
+    # Populated by the orchestrator — the raw signals behind `recognition`/`gaps`.
+    matches: list[MatchResult] = field(default_factory=list)
+    bridges: list[Bridge] = field(default_factory=list)

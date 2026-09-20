@@ -11,29 +11,24 @@ import {
   ChevronRight,
   Sparkles,
 } from "lucide-react";
-import {
-  DEMO_HEI_QUEUE,
-  DEMO_HEI_STATS,
-  type HeiReviewItem,
-  type HeiDecisionStatus,
-} from "@/lib/constants/demo-hei";
+import type { HeiReviewItem, HeiDecisionStatus, HeiQueueResponse } from "@/lib/api/types";
 import { cn } from "@/lib/utils/cn";
 
 type FilterKey = "ALL" | "PENDING" | "HIGH";
 
 /* ───── 1. STATS HEADER ───── */
-function StatsBar() {
+function StatsBar({ stats }: { stats: HeiQueueResponse["stats"] }) {
   const items: {
     label: string;
     value: number | string;
     tone: "amber" | "emerald" | "rose" | "navy";
     isText?: boolean;
   }[] = [
-    { label: "Pending review", value: DEMO_HEI_STATS.pending, tone: "amber" },
-    { label: "Approved today", value: DEMO_HEI_STATS.approvedToday, tone: "emerald" },
-    { label: "Rejected today", value: DEMO_HEI_STATS.rejectedToday, tone: "rose" },
-    { label: "Avg review time", value: DEMO_HEI_STATS.avgReviewTime, tone: "navy", isText: true },
-  ];
+      { label: "Pending review", value: stats.pending, tone: "amber" },
+      { label: "Approved today", value: stats.approvedToday, tone: "emerald" },
+      { label: "Rejected today", value: stats.rejectedToday, tone: "rose" },
+      { label: "Avg review time", value: stats.avgReviewTime, tone: "navy", isText: true },
+    ];
 
   const toneMap = {
     amber: "text-amber-600",
@@ -125,6 +120,7 @@ const STATUS_CHIP: Record<HeiDecisionStatus, string> = {
   APPROVED: "bg-emerald-100 text-emerald-800",
   REJECTED: "bg-rose-100 text-rose-800",
   ESCALATED: "bg-sky-100 text-sky-800",
+  CONTESTED: "bg-rose-100 text-rose-800",
 };
 
 const PRIORITY_DOT: Record<HeiReviewItem["priority"], string> = {
@@ -142,6 +138,7 @@ function RecommendationChip({
     DIRECT: "bg-emerald-100 text-emerald-800",
     BRIDGE: "bg-amber-100 text-amber-900",
     MISSING: "bg-rose-100 text-rose-800",
+    REVIEW: "bg-slate-100 text-slate-800",
   };
   return (
     <span
@@ -159,10 +156,12 @@ function ReviewRow({
   item,
   index,
   onAction,
+  acting,
 }: {
   item: HeiReviewItem;
   index: number;
   onAction: (id: string, action: "approve" | "reject") => void;
+  acting: boolean;
 }) {
   return (
     <motion.li
@@ -230,8 +229,8 @@ function ReviewRow({
                   item.confidence >= 0.85
                     ? "text-emerald-700"
                     : item.confidence >= 0.65
-                    ? "text-amber-700"
-                    : "text-rose-700"
+                      ? "text-amber-700"
+                      : "text-rose-700"
                 )}
               >
                 {Math.round(item.confidence * 100)}%
@@ -247,8 +246,8 @@ function ReviewRow({
                   item.confidence >= 0.85
                     ? "bg-emerald-500"
                     : item.confidence >= 0.65
-                    ? "bg-amber-500"
-                    : "bg-rose-500"
+                      ? "bg-amber-500"
+                      : "bg-rose-500"
                 )}
               />
             </div>
@@ -258,17 +257,19 @@ function ReviewRow({
             <div className="flex gap-2">
               <button
                 onClick={() => onAction(item.id, "reject")}
-                className="flex items-center gap-1.5 rounded-full border border-border-subtle bg-white px-3.5 py-2 text-[12px] font-semibold text-text-secondary transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
+                disabled={acting}
+                className="flex items-center gap-1.5 rounded-full border border-border-subtle bg-white px-3.5 py-2 text-[12px] font-semibold text-text-secondary transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
               >
                 <X className="h-3.5 w-3.5" />
                 Reject
               </button>
               <button
                 onClick={() => onAction(item.id, "approve")}
-                className="flex items-center gap-1.5 rounded-full bg-emerald-600 px-3.5 py-2 text-[12px] font-semibold text-white shadow-[0_8px_20px_-8px_rgb(16_185_129_/_0.6)] transition-all hover:-translate-y-0.5 hover:bg-emerald-700"
+                disabled={acting}
+                className="flex items-center gap-1.5 rounded-full bg-emerald-600 px-3.5 py-2 text-[12px] font-semibold text-white shadow-[0_8px_20px_-8px_rgb(16_185_129_/_0.6)] transition-all hover:-translate-y-0.5 hover:bg-emerald-700 disabled:opacity-50"
               >
                 <Check className="h-3.5 w-3.5" />
-                Approve
+                {acting ? "Saving…" : "Approve"}
               </button>
             </div>
           ) : (
@@ -285,9 +286,18 @@ function ReviewRow({
 
 /* ───── MAIN ───── */
 
-export function ReviewQueue() {
+export function ReviewQueue({
+  items,
+  stats,
+  onAction,
+  actingId,
+}: {
+  items: HeiReviewItem[];
+  stats: HeiQueueResponse["stats"];
+  onAction: (id: string, action: "approve" | "reject") => void;
+  actingId?: string | null;
+}) {
   const [filter, setFilter] = useState<FilterKey>("ALL");
-  const [items, setItems] = useState<HeiReviewItem[]>(DEMO_HEI_QUEUE);
 
   const counts = useMemo(
     () => ({
@@ -304,19 +314,9 @@ export function ReviewQueue() {
     return items;
   }, [items, filter]);
 
-  const onAction = (id: string, action: "approve" | "reject") => {
-    setItems((prev) =>
-      prev.map((i) =>
-        i.id === id
-          ? { ...i, status: action === "approve" ? "APPROVED" : "REJECTED" }
-          : i
-      )
-    );
-  };
-
   return (
     <div className="space-y-5">
-      <StatsBar />
+      <StatsBar stats={stats} />
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <FilterTabs active={filter} onChange={setFilter} counts={counts} />
@@ -345,6 +345,7 @@ export function ReviewQueue() {
                 item={item}
                 index={i}
                 onAction={onAction}
+                acting={actingId === item.id}
               />
             ))}
           </AnimatePresence>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -18,13 +19,10 @@ import {
 import { AppShell } from "@/components/layout/AppShell";
 import { BottomStrip } from "@/components/layout/BottomStrip";
 import { RecognizedBadge } from "@/components/pathways/RecognizedBadge";
-import { DEMO_STUDENT, DEMO_CHAIN } from "@/lib/constants/demo";
-import {
-  DEMO_STATS,
-  DEMO_RECOGNITION_BREAKDOWN,
-} from "@/lib/constants/demo-pathway-infographic";
-import { DEMO_DECISIONS } from "@/lib/constants/demo-profile";
 import { cn } from "@/lib/utils/cn";
+import { useRequireRole } from "@/lib/hooks/useRequireRole";
+import { useRunPathway, useStudentProfile } from "@/lib/api/hooks";
+import type { DecisionHistoryItem, RecognitionSummary } from "@/lib/api/types";
 
 /* ───── helpers ───── */
 
@@ -69,10 +67,8 @@ function Hero({ firstName }: { firstName: string }) {
             Welcome back, {firstName}.
           </h1>
           <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-text-secondary">
-            Your academic pathway is updated.{" "}
-            <span className="font-semibold text-text-primary">3 bridges</span>{" "}
-            require action. Review your recommended pathway before the next
-            Board of Studies window.
+            Your academic pathway is updated. Review your recommended pathway
+            before the next Board of Studies window.
           </p>
         </div>
 
@@ -96,12 +92,22 @@ function Hero({ firstName }: { firstName: string }) {
 
 /* ───── 2. STATS ROW ───── */
 
-function StatsRow() {
+function StatsRow({
+  recognized,
+  bridges,
+  semsRemaining,
+  alignment,
+}: {
+  recognized: number;
+  bridges: number;
+  semsRemaining: number;
+  alignment: number;
+}) {
   const items = [
-    { key: "recognized", label: "Credits Recognized", value: DEMO_STATS.recognized, suffix: "", tone: "emerald", Icon: GraduationCap },
-    { key: "bridges", label: "Bridges Required", value: DEMO_STATS.bridges, suffix: "", tone: "amber", Icon: GitBranch },
-    { key: "sems", label: "Semesters Left", value: DEMO_STATS.semsRemaining, suffix: "", tone: "navy", Icon: CalendarRange },
-    { key: "alignment", label: "Content Alignment", value: DEMO_STATS.alignment, suffix: "%", tone: "emerald", Icon: Target },
+    { key: "recognized", label: "Credits Recognized", value: recognized, suffix: "", tone: "emerald", Icon: GraduationCap },
+    { key: "bridges", label: "Bridges Required", value: bridges, suffix: "", tone: "amber", Icon: GitBranch },
+    { key: "sems", label: "Semesters Left", value: semsRemaining, suffix: "", tone: "navy", Icon: CalendarRange },
+    { key: "alignment", label: "Content Alignment", value: alignment, suffix: "%", tone: "emerald", Icon: Target },
   ] as const;
 
   const toneMap = {
@@ -147,8 +153,24 @@ function StatsRow() {
 
 /* ───── 3. RECOGNITION BREAKDOWN ───── */
 
-function RecognitionBreakdown() {
-  const total = DEMO_RECOGNITION_BREAKDOWN.reduce((s, d) => s + d.value, 0);
+const BREAKDOWN_COLORS: Record<string, string> = {
+  Direct: "#10b981",
+  Bridge: "#f59e0b",
+  Missing: "#f43f5e",
+  Review: "#64748b",
+  "Policy Conflict": "#7c3aed",
+};
+
+function RecognitionBreakdown({ recognition }: { recognition: RecognitionSummary }) {
+  const items = [
+    { name: "Direct", value: recognition.direct },
+    { name: "Bridge", value: recognition.bridge },
+    { name: "Missing", value: recognition.missing },
+    { name: "Review", value: recognition.review },
+    { name: "Policy Conflict", value: recognition.policy_conflict },
+  ].filter((d) => d.value > 0);
+  const total = items.reduce((s, d) => s + d.value, 0) || 1;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -162,7 +184,7 @@ function RecognitionBreakdown() {
             Recognition Breakdown
           </p>
           <h3 className="mt-1 font-display text-[18px] font-bold tracking-tight text-text-primary">
-            {total} credits mapped
+            {total} course{total === 1 ? "" : "s"} mapped
           </h3>
         </div>
         <Link
@@ -175,30 +197,23 @@ function RecognitionBreakdown() {
       </div>
 
       <div className="mt-5 flex h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
-        {DEMO_RECOGNITION_BREAKDOWN.map((item, i) => (
+        {items.map((item, i) => (
           <motion.div
             key={item.name}
             initial={{ width: 0 }}
             animate={{ width: `${(item.value / total) * 100}%` }}
-            transition={{
-              delay: 0.5 + i * 0.1,
-              duration: 0.8,
-              ease: [0.16, 1, 0.3, 1],
-            }}
-            style={{ backgroundColor: item.color }}
+            transition={{ delay: 0.5 + i * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            style={{ backgroundColor: BREAKDOWN_COLORS[item.name] }}
           />
         ))}
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 md:grid-cols-4">
-        {DEMO_RECOGNITION_BREAKDOWN.map((item) => {
+        {items.map((item) => {
           const pct = Math.round((item.value / total) * 100);
           return (
             <div key={item.name} className="flex items-center gap-2">
-              <span
-                className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: item.color }}
-              />
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: BREAKDOWN_COLORS[item.name] }} />
               <span className="text-[11px] font-semibold uppercase tracking-wider text-text-muted">
                 {item.name}
               </span>
@@ -218,23 +233,42 @@ function RecognitionBreakdown() {
 
 /* ───── 4. CONTINUE WHERE YOU LEFT OFF ───── */
 
-const STATUS_ICON = {
+const STATUS_ICON: Record<string, typeof CheckCircle2> = {
   APPROVED: CheckCircle2,
   PENDING: Clock,
-  REVIEW: AlertTriangle,
-} as const;
+  REJECTED: AlertTriangle,
+  CONTESTED: AlertTriangle,
+};
 
-const STATUS_STYLE = {
+const STATUS_STYLE: Record<string, string> = {
   APPROVED: "bg-emerald-100 text-emerald-800",
   PENDING: "bg-amber-100 text-amber-900",
-  REVIEW: "bg-rose-100 text-rose-800",
-} as const;
+  REJECTED: "bg-rose-100 text-rose-800",
+  CONTESTED: "bg-rose-100 text-rose-800",
+};
 
-function ContinueWhereYouLeftOff() {
-  // Most recent decision only (not the full history — that lives on Profile)
-  const latest = DEMO_DECISIONS[0];
-  const Icon = STATUS_ICON[latest.status];
-  const chip = STATUS_STYLE[latest.status];
+function ContinueWhereYouLeftOff({ latest }: { latest: DecisionHistoryItem | undefined }) {
+  if (!latest) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45, duration: 0.5 }}
+        className="card-warm flex h-full flex-col items-center justify-center gap-3 p-6 text-center"
+      >
+        <p className="text-[13px] text-text-secondary">
+          No decisions yet — run a pathway analysis to get started.
+        </p>
+        <Link href="/student/pathways" className="pill-navy">
+          <Sparkles className="h-4 w-4" />
+          <span>Review pathway</span>
+        </Link>
+      </motion.div>
+    );
+  }
+
+  const Icon = STATUS_ICON[latest.status] ?? Clock;
+  const chip = STATUS_STYLE[latest.status] ?? STATUS_STYLE.PENDING;
 
   return (
     <motion.div
@@ -254,24 +288,14 @@ function ContinueWhereYouLeftOff() {
 
       <div className="mt-5 flex-1">
         <Link
-          href={`/student/audit/${latest.decisionId}`}
+          href={`/student/audit/${latest.decision_id}`}
           className="group flex h-full flex-col gap-4 rounded-2xl border border-border-subtle bg-white/70 p-5 transition-all hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md"
         >
           <div className="flex items-start justify-between gap-3">
-            <span
-              className={cn(
-                "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
-                chip
-              )}
-            >
+            <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full", chip)}>
               <Icon className="h-4 w-4" />
             </span>
-            <span
-              className={cn(
-                "rounded-full px-2.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider",
-                chip
-              )}
-            >
+            <span className={cn("rounded-full px-2.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider", chip)}>
               {latest.status}
             </span>
           </div>
@@ -281,7 +305,7 @@ function ContinueWhereYouLeftOff() {
               {latest.summary}
             </p>
             <p className="mt-1.5 font-mono text-[10.5px] text-text-muted">
-              {latest.decisionId.slice(0, 14)}… · {fmtDateTime(latest.decidedAt)}
+              {latest.decision_id.slice(0, 14)}… · {fmtDateTime(latest.decided_at)}
             </p>
           </div>
 
@@ -308,7 +332,7 @@ function ContinueWhereYouLeftOff() {
 
 const QUICK_ACTIONS = [
   { href: "/student/tree", label: "Academic Tree", sub: "Competency explorer", Icon: TrendingUp, tone: "emerald" },
-  { href: "/student/pathways", label: "Pathways", sub: "3 routes to graduation", Icon: GitBranch, tone: "navy" },
+  { href: "/student/pathways", label: "Pathways", sub: "Routes to graduation", Icon: GitBranch, tone: "navy" },
   { href: "/student/gaps", label: "Gap Analysis", sub: "Bridges & outcomes", Icon: Target, tone: "amber" },
   { href: "/student/profile", label: "Profile", sub: "Identity & consents", Icon: GraduationCap, tone: "navy" },
 ] as const;
@@ -348,18 +372,11 @@ function QuickActions() {
               href={a.href}
               className="group flex h-full flex-col gap-3 rounded-2xl border border-border-subtle bg-white/70 p-4 transition-all hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md"
             >
-              <span
-                className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-full",
-                  tones[a.tone]
-                )}
-              >
+              <span className={cn("flex h-9 w-9 items-center justify-center rounded-full", tones[a.tone])}>
                 <a.Icon className="h-4 w-4" />
               </span>
               <div>
-                <p className="text-[13px] font-semibold leading-tight text-text-primary">
-                  {a.label}
-                </p>
+                <p className="text-[13px] font-semibold leading-tight text-text-primary">{a.label}</p>
                 <p className="mt-0.5 text-[11px] text-text-muted">{a.sub}</p>
               </div>
             </Link>
@@ -373,21 +390,50 @@ function QuickActions() {
 /* ───── PAGE ───── */
 
 export default function StudentHome() {
-  const firstName = DEMO_STUDENT.name.split(" ")[0];
+  const session = useRequireRole("learner");
+  const profile = useStudentProfile(session?.externalRef);
+  const runPathway = useRunPathway();
+
+  // Auto-run the pathway analysis once per session so the dashboard has
+  // fresh recognition/gap/bridge numbers without the student needing to
+  // press a button first — mirrors what /student/pathways lets them
+  // re-run on demand.
+  useEffect(() => {
+    if (session && !runPathway.data && !runPathway.isPending) {
+      runPathway.mutate({
+        studentId: session.externalRef,
+        targetProgramme: session.targetProgramme ?? "BTech-CSE",
+        institution: session.targetInstitution ?? "IIT Bombay",
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
+
+  if (!session) return null;
+
+  const firstName = session.displayName.split(" ")[0];
+  const recognition = runPathway.data?.recognition;
+  const totalCourses = recognition
+    ? recognition.direct + recognition.bridge + recognition.missing + recognition.review + recognition.policy_conflict
+    : 0;
+  const alignment = totalCourses ? Math.round(((recognition!.direct + recognition!.bridge) / totalCourses) * 100) : 0;
+  const semsRemaining = runPathway.data?.pathways.length
+    ? Math.min(...runPathway.data.pathways.map((p) => p.terms))
+    : 0;
 
   const topBarRight = (
     <>
       <span className="pill hidden lg:inline-flex">
         <span className="font-semibold text-text-primary">
-          APAAR: {DEMO_STUDENT.apaar}
+          {session.externalRef}
         </span>
         <span className="text-text-muted">·</span>
-        <span>{DEMO_STUDENT.programme}</span>
+        <span>{session.programme}</span>
       </span>
       <span className="pill hidden md:inline-flex">
-        Chain ID: {DEMO_CHAIN.id}
+        {session.targetInstitution}
       </span>
-      <RecognizedBadge percent={DEMO_STATS.alignment} />
+      <RecognizedBadge percent={alignment} />
     </>
   );
 
@@ -401,12 +447,24 @@ export default function StudentHome() {
       <section className="mx-auto max-w-[1700px] space-y-5 px-4 pb-4 pt-4 md:px-6">
         <Hero firstName={firstName} />
 
-        <StatsRow />
-
-        <RecognitionBreakdown />
+        {runPathway.isPending && !runPathway.data ? (
+          <div className="card-warm p-8 text-center text-[13px] text-text-secondary">
+            Running your pathway analysis…
+          </div>
+        ) : recognition ? (
+          <>
+            <StatsRow
+              recognized={recognition.direct + recognition.bridge}
+              bridges={recognition.bridge}
+              semsRemaining={semsRemaining}
+              alignment={alignment}
+            />
+            <RecognitionBreakdown recognition={recognition} />
+          </>
+        ) : null}
 
         <div className="grid gap-5 lg:grid-cols-2">
-          <ContinueWhereYouLeftOff />
+          <ContinueWhereYouLeftOff latest={profile.data?.decisions[0]} />
           <QuickActions />
         </div>
       </section>

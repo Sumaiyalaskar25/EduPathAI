@@ -2,11 +2,16 @@
 
 > **An AI-driven, regulation-aware academic pathway intelligence system that converts a learner's academic evidence into explainable, constraint-aware progression and mobility pathways.**
 
+[![Next.js 14](https://img.shields.io/badge/frontend-Next.js%2014%20App%20Router-black.svg)](web/)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
-[![Tests](https://img.shields.io/badge/pytest-54%20passed-brightgreen.svg)](test/)
+[![FastAPI](https://img.shields.io/badge/api-FastAPI%200.111-009688.svg)](services/api/)
+[![Tests](https://img.shields.io/badge/pytest-194%20passed-brightgreen.svg)](test/)
 [![Optimization](https://img.shields.io/badge/solver-OR--Tools%20CBC-orange.svg)](https://developers.google.com/optimization)
 [![Architecture](https://img.shields.io/badge/ADR-13%20Accepted-purple.svg)](docs/adr/)
 [![Storage](https://img.shields.io/badge/database-PostgreSQL%20%2F%20pgvector-blue.svg)](db/)
+[![Docker](https://img.shields.io/badge/docker-compose%20ready-2496ED.svg)](docker-compose.yml)
+
+> **Quickstart?** Run `docker compose up --build` then `docker compose exec api python scripts/seed.py` (see [`QUICKSTART.md`](QUICKSTART.md) for full instructions).
 
 EduPathAI is an academic decision-support platform designed to address the foundational bottleneck in modern higher education mobility: **how to translate verified student transcripts and earned competencies into rigorous, regulation-compliant academic pathways at receiving institutions.** 
 
@@ -365,176 +370,286 @@ The MILP solver schedules remaining degree requirements:
 
 ## Technical Stack
 
-EduPathAI strictly uses the following production stack (defined in [`requirements.txt`](requirements.txt)):
+EduPathAI is built as an end-to-end full-stack platform consisting of a high-throughput Python backend, an optimization and AI matching engine, an async PostgreSQL database, and a Next.js 14 web application:
 
 | Category | Component / Library | Version | Project Purpose |
 | :--- | :--- | :--- | :--- |
-| **Runtime & Language** | Python | `3.11.9` | Core service execution environment |
-| **API Framework** | FastAPI | `0.111.0` | High-throughput async REST API |
-| **Web Server** | Uvicorn | `0.30.1` | ASGI production application server |
-| **Data Contracts** | Pydantic / Pydantic Settings | `2.7.4` / `2.3.4` | Strictly typed runtime schema validation |
-| **Relational Database** | SQLAlchemy / Asyncpg | `2.0.31` / `0.29.0` | Async PostgreSQL ORM and native driver |
-| **Database Migrations**| Alembic | `1.13.2` | Schema migration management |
-| **Vector Storage** | pgvector | `0.3.0` | PostgreSQL native vector similarity search |
+| **Frontend Framework** | Next.js (App Router) | `14.2.5` | Reactive multi-role portal (Student, HEI, Government) |
+| **UI & Styling** | React / Tailwind CSS / Lucide | `18.3.1` / `3.4.1` | Modern, responsive dashboard design system |
+| **Client State Management** | Zustand | `4.5.4` | Global session, persona switching, and reactive stores |
+| **Backend Runtime** | Python | `3.11.9` | High-performance core service execution |
+| **API Gateway** | FastAPI / Uvicorn | `0.111.0` / `0.30.1` | Asynchronous REST gateway with OpenAPI documentation |
+| **Data Contracts** | Pydantic / Pydantic Settings | `2.7.4` / `2.3.4` | Strictly typed runtime schema validation and settings |
+| **Database & ORM** | PostgreSQL / Asyncpg / SQLAlchemy | `16+` / `0.29.0` / `2.0.31` | High-concurrency async connection pool and transactional queries |
+| **Database Migrations**| Raw SQL / Alembic | `5 Migrations` | Structured schema versioning and vector extensions |
+| **Vector Storage** | pgvector | `0.3.0` | In-database embedding similarity index (HNSW / Cosine) |
 | **AI / Embeddings** | Sentence-Transformers | `3.0.1` | Local dense vector embeddings & cross-encoders |
-| **LLM Inference** | Google Generative AI / OpenAI | `0.7.2` / `1.35.0` | Structured outcome extraction & synthesis |
-| **Optimization Solver**| Google OR-Tools CBC | `9.10.4067` | Branch-and-Cut Mixed-Integer Linear Programming |
-| **Observability** | OpenTelemetry API / SDK | `1.25.0` | Distributed W3C trace context propagation |
-| **Metrics Collection** | Prometheus Client | `0.20.0` | Solver latency, queue depth, cache telemetry |
-| **Config & Schemas** | PyYAML / jsonschema | `6.0.1` / `4.22.0` | Policy definition & JSON-LD validation |
-| **Test Suite** | Pytest / Pytest-Asyncio / HTTPX| `8.2.2` / `0.23.7` / `0.27.0` | Unit, property, and async integration testing |
+| **LLM Inference** | Google Gemini / OpenAI-Compatible | `0.7.2` / `1.35.0` | Semantic outcome extraction and multi-model consensus |
+| **Optimization Solver**| Google OR-Tools CBC | `9.10.4067` | Branch-and-Cut Mixed-Integer Linear Programming (MILP) |
+| **Proof & PDF Export** | ReportLab | `4.2.2` | Cryptographic audit ledger inclusion certificate generation |
+| **Observability** | OpenTelemetry API & SDK | `1.25.0` | Distributed W3C trace context propagation and spans |
+| **Metrics Collection** | Prometheus Client | `0.20.0` | Solver latency, queue depth, and cache hit telemetry |
+| **Containerization** | Docker / Docker Compose | Multi-stage | Reproducible local and production container deployment |
+| **Test Suite** | Pytest / Pytest-Asyncio / HTTPX| `8.2.2` / `0.23.7` / `0.27.0` | 194 automated unit, integration, and property tests |
 
 ---
 
 ## Repository Structure
 
-The repository adheres to a strict hexagonal architecture where domain interfaces remain frozen and decoupled from external drivers:
+The repository follows a clean hexagonal architecture where domain interfaces remain frozen and decoupled from external drivers:
 
 ```text
 edupathai/
-├── conftest.py                   # Pytest test session configuration
-├── requirements.txt              # Pinned production dependencies
-├── data/                         # Ingested datasets and test corpora
-│   ├── resources/                # Remedial bridge catalog fixtures (NPTEL, SWAYAM)
-│   ├── students/                 # Tokenized student transcript profiles
-│   └── syllabi/                  # Normalised university curriculum documents
-├── db/                           # Database layer
-│   └── migrations/               # PostgreSQL schema & pgvector migration scripts
-│       ├── 001_init.sql          # Base tables: students, courses, audit ledger, outbox
-│       ├── 002_vector.sql        # pgvector extension & curriculum embeddings
-│       ├── 003_indexes.sql       # B-Tree, GIN, and HNSW indexes
-│       └── 004_solver_cache.sql  # Decision bundle & solver precomputation cache
-├── docs/                         # Comprehensive engineering documentation
-│   ├── adr/                      # 13 Architecture Decision Records (ADRs)
-│   ├── architecture/             # Structural and data-flow specifications
-│   ├── demo/                     # End-to-end hackathon demonstration scripts
-│   ├── interfaces/               # Component boundary contracts
-│   └── pitch/                    # SIH evaluation summaries
-├── policy/                       # Institutional transfer policies
-│   ├── institutions/             # Active institutional policy rules (e.g., IIT-Bombay)
-│   └── templates/                # Standard NEP 2020 transfer templates
-├── proto/                        # Protocol buffer contracts (Planned V2)
-├── reports/                      # Empirical engineering benchmarks
-│   └── solver/
-│       ├── benchmark.md          # Measured solver latency & cache hit rates
-│       └── fleet_sizing.md       # Erlang-C queuing models & concurrency fleet math
-├── services/                     # Core backend services
-│   ├── schemas.py                # FROZEN interface contracts (DecisionBundle, Pathway, etc.)
-│   ├── api/                      # REST gateway and pipeline orchestration
-│   │   ├── orchestrator.py       # Main decision pipeline coordinator
-│   │   └── server.py             # FastAPI entrypoint and health routes
-│   ├── audit/                    # Cryptographic auditability
-│   │   ├── ledger.py             # Partitioned SHA-256 hash-chained ledger
-│   │   └── merkle_ledger.py      # Sharded Merkle tree audit proofs
-│   ├── bridge/                   # Gap remediation
-│   │   └── resource_registry.py  # Accredited bridge catalogue & outcome matching
-│   ├── cache/                    # High-throughput caching primitives
-│   │   └── bloom_filter.py       # Space-efficient pre-query filters
-│   ├── matching/                      # AI & semantic matching (Member 2)
-│   │   ├── real.py                    # RealMatcher - drop-in for StubMatcher
-│   │   ├── stub.py                    # Deterministic fixture-based fallback
-│   │   ├── version_provider.py        # Canonical model version strings
-│   │   ├── circuit_breaker.py         # Per-provider failure isolation
-│   │   ├── cost_tracker.py            # USD + token accounting
-│   │   ├── gateway.py                 # Provider router (breakers + cost + fallback)
-│   │   ├── embedder.py                # 384-dim sentence-transformer embeddings
-│   │   ├── bloom.py                   # Bloom taxonomy comparison
-│   │   ├── cross_encoder.py           # ms-marco reranker (sigmoid-normalized)
-│   │   ├── coverage.py                # Outcome coverage (cross-encoder x Bloom)
-│   │   ├── domain_shard.py            # Rule-based domain classifier
-│   │   ├── fixture_loader.py          # Enriches gold fixtures with bloom/domain
-│   │   ├── consensus.py               # Multi-model cross-encoder consensus
-│   │   ├── lsh_matcher.py             # MinHash Locality-Sensitive Hashing
-│   │   ├── minhash_consensus.py       # Fast Jaccard similarity consensus
-│   │   ├── pq_vector_index.py         # Product Quantization approximate index
-│   │   ├── batch_matcher.py           # High-throughput asynchronous batch processor
-│   │   └── providers/                 # LLM provider adapters
-│   │       ├── base.py                # Canonical Provider Protocol
-│   │       ├── local.py               # Deterministic no-op fallback
-│   │       ├── gemini.py              # Google Gemini adapter
-│   │       └── openai_compatible.py   # OpenAI / DeepSeek / Kimi adapter
-│   ├── outbox/                   # Reliable asynchronous messaging
-│   │   └── outbox.py             # Transactional Outbox pattern implementation
-│   ├── policy/                   # Institutional policy engine
-│   │   └── loader.py             # Policy parsing & threshold enforcement
-│   ├── recognition/              # Deterministic equivalence engine
-│   │   ├── bitset_prerequisites.py# 64-bit word bitset prerequisite engine
-│   │   ├── graph_validator.py    # Tarjan's SCC cycle detection & Kahn's sort
-│   │   ├── prerequisites.py      # Recursive hypergraph prerequisite evaluator
-│   │   └── recognizer.py         # Multi-signal deterministic classifier
-│   ├── snapshot/                 # Snapshot & version capture
-│   │   └── bundle_provider.py    # 13-tuple DecisionBundle factory
-│   └── solver/                   # PATH-SOLVE optimization engine
-│       ├── decomposed_milp.py    # Multi-stage decomposed MILP scheduler
-│       ├── fallback.py           # Topological greedy fallback scheduler
-│       ├── incremental_planner.py# Delta-replanning on course completion
-│       ├── metrics.py            # Prometheus metrics exporter
-│       ├── milp.py               # Google OR-Tools CBC primary solver
-│       ├── prereq_loader.py      # Prerequisite hypergraph loader
-│       ├── validator.py          # Independent Solution Feasibility Validator
-│       └── with_fallback.py      # Resilient solver wrapper with auto-degradation
-├── test/                         # Comprehensive automated test suite
-│   ├── fixtures/                 # Real syllabus fixtures with gold-standard labels
-│   ├── integration/              # Full pipeline & decision loop integration tests
-│   ├── load/                     # Concurrency & queue stress tests
-│   └── unit/                     # 44 isolated algorithmic unit tests
-└── web/                          # Frontend web application (Planned / In Progress)
-    ├── audit/                    # Administrative audit inspection UI
-    └── pathway/                  # Interactive student pathway visualizer
+├── Dockerfile                        # Multi-stage container build for FastAPI backend
+├── docker-compose.yml                # Full-stack composition (Postgres + API + Web)
+├── QUICKSTART.md                     # Single-command setup and live testing guide
+├── requirements.txt                  # Pinned Python dependencies
+├── conftest.py                       # Pytest test session configuration
+├── .env.example                      # Reference environment variable configuration
+│
+├── data/                             # Ingested datasets, schemas, and test fixtures
+│   ├── identity_directory.json       # Synthetic DigiLocker / APAAR identity records
+│   ├── institutions_directory.json   # Institutional metadata and accreditation profiles
+│   ├── resources/                    # Remedial bridge catalog fixtures (NPTEL, SWAYAM)
+│   ├── students/                     # Tokenized student transcript profiles
+│   └── syllabi/                      # Normalized university curriculum documents
+│
+├── db/                               # Database schema and migration management
+│   └── migrations/                   # Sequential PostgreSQL schema migrations
+│       ├── 001_init.sql              # Base tables: students, courses, audit ledger, outbox
+│       ├── 002_vector.sql            # pgvector extension & curriculum embeddings
+│       ├── 003_indexes.sql           # B-Tree, GIN, and HNSW indexes
+│       ├── 004_solver_cache.sql      # Decision bundle & solver precomputation cache
+│       └── 005_app_extensions.sql    # Persisted gaps, bridges, review provenance, & policies
+│
+├── docs/                             # Comprehensive engineering documentation
+│   ├── adr/                          # 13 Architecture Decision Records (ADRs)
+│   ├── architecture/                 # Structural and data-flow specifications
+│   ├── demo/                         # End-to-end hackathon demonstration scripts
+│   ├── interfaces/                   # Component boundary contracts
+│   └── pitch/                        # SIH evaluation summaries
+│
+├── policy/                           # Institutional transfer policies
+│   ├── institutions/                 # Active institutional policy rules (e.g., IIT-Bombay)
+│   └── templates/                    # Standard NEP 2020 transfer templates
+│
+├── proto/                            # Protocol buffer contracts (Planned V2)
+│
+├── reports/                          # Empirical engineering benchmarks
+│   └── solver/                       # Latency benchmarks & Erlang-C fleet sizing
+│
+├── scripts/                          # Maintenance, diagnostic, and seed utilities
+│   ├── dev.ps1                       # Windows local development helper
+│   ├── diagnose_matcher.py           # Cross-encoder & matcher diagnostic harness
+│   └── seed.py                       # Real database pipeline seeding (5 students)
+│
+├── services/                         # Core Python backend microservices
+│   ├── schemas.py                    # FROZEN interface contracts (DecisionBundle, Pathway, etc.)
+│   │
+│   ├── api/                          # REST API Gateway & routing layer
+│   │   ├── server.py                 # FastAPI application factory & router registration
+│   │   ├── orchestrator.py           # Main decision pipeline coordinator
+│   │   ├── deps.py                   # Dependency injection (database pools, matchers)
+│   │   ├── auth_deps.py              # Role-based access control & token validators
+│   │   ├── pdf.py                    # PDF certificate generation for audit proofs
+│   │   └── routes/                   # Modular REST route handlers
+│   │       ├── auth.py               # DigiLocker auth & session management
+│   │       ├── pathway.py            # Pathway calculation & retrieval
+│   │       ├── audit.py              # Ledger verification, proof chains, & PDF export
+│   │       ├── students.py           # Student transcript lookup, gaps, & bridges
+│   │       ├── courses.py            # Course catalog query endpoints
+│   │       ├── bridges.py            # Remedial course catalog & search
+│   │       ├── hei.py                # HEI review queue, BoS approvals, & analytics
+│   │       └── gov.py                # National stats, mobility matrix, & compliance
+│   │
+│   ├── audit/                        # Cryptographic auditability
+│   │   ├── ledger.py                 # Partitioned SHA-256 hash-chained ledger
+│   │   └── merkle_ledger.py          # Sharded Merkle tree audit proofs
+│   │
+│   ├── auth/                         # Identity verification & session layer
+│   │   ├── digilocker.py             # DigiLocker / APAAR credential mock provider
+│   │   └── session.py                # In-memory & token-based session store
+│   │
+│   ├── bridge/                       # Gap remediation & bridge allocation
+│   │   └── resource_registry.py      # Accredited bridge catalogue & outcome matching
+│   │
+│   ├── cache/                        # High-throughput caching primitives
+│   │   └── bloom_filter.py           # Space-efficient pre-query filters
+│   │
+│   ├── db/                           # Asynchronous persistence layer
+│   │   ├── pool.py                   # asyncpg database connection pooling & migration runner
+│   │   └── students.py               # Student profile queries & persistence
+│   │
+│   ├── identity/                     # Identity directory integration
+│   │   └── directory.py              # APAAR / ABC identity directory lookup
+│   │
+│   ├── matching/                     # Semantic outcome matching & AI Gateway
+│   │   ├── real.py                   # RealMatcher with embedder + cross-encoder + Bloom
+│   │   ├── stub.py                   # Deterministic fixture-based fallback matcher
+│   │   ├── gateway.py                # AI provider gateway with circuit breakers & fallback
+│   │   ├── ai_gateway_factory.py     # Production AI gateway factory
+│   │   ├── embedder.py               # 384-dim sentence-transformer embeddings
+│   │   ├── cross_encoder.py          # ms-marco cross-encoder re-ranking
+│   │   ├── bloom.py                  # Bloom's taxonomy cognitive depth comparison
+│   │   ├── coverage.py               # Outcome coverage matrix calculator
+│   │   ├── domain_shard.py           # Domain classification & partition routing
+│   │   ├── explain.py                # Explainable AI rationale generator
+│   │   ├── course_catalog.py         # Static & database-backed course lookup
+│   │   ├── consensus.py              # Multi-model cross-encoder consensus
+│   │   ├── lsh_matcher.py            # MinHash Locality-Sensitive Hashing
+│   │   ├── minhash_consensus.py      # Fast Jaccard similarity consensus
+│   │   ├── pq_vector_index.py        # Product Quantization vector index
+│   │   ├── batch_matcher.py          # High-throughput asynchronous batch processor
+│   │   ├── circuit_breaker.py        # Per-provider failure isolation
+│   │   ├── cost_tracker.py           # Token accounting & budget limits
+│   │   ├── version_provider.py       # Canonical model version strings
+│   │   ├── fixture_loader.py         # Test fixture loader
+│   │   └── providers/                # LLM provider adapters
+│   │       ├── base.py               # Canonical provider protocol
+│   │       ├── gemini.py             # Google Gemini adapter
+│   │       ├── openai_compatible.py  # OpenAI / DeepSeek / Kimi adapter
+│   │       └── local.py              # Deterministic local fallback
+│   │
+│   ├── outbox/                       # Reliable asynchronous messaging
+│   │   └── outbox.py                 # Transactional Outbox pattern implementation
+│   │
+│   ├── policy/                       # Institutional policy engine
+│   │   └── loader.py                 # Policy parsing & threshold enforcement
+│   │
+│   ├── recognition/                  # Deterministic equivalence engine
+│   │   ├── recognizer.py             # Multi-signal deterministic classifier
+│   │   ├── prerequisites.py          # Recursive hypergraph prerequisite evaluator
+│   │   ├── bitset_prerequisites.py   # 64-bit word bitset prerequisite engine
+│   │   └── graph_validator.py        # Tarjan's SCC cycle detection & Kahn's sort
+│   │
+│   ├── snapshot/                     # Snapshot & version capture
+│   │   └── bundle_provider.py        # 13-tuple DecisionBundle factory
+│   │
+│   ├── solver/                       # PATH-SOLVE optimization engine
+│   │   ├── milp.py                   # Google OR-Tools CBC primary solver
+│   │   ├── decomposed_milp.py        # Multi-stage decomposed MILP scheduler
+│   │   ├── with_fallback.py          # Resilient solver wrapper with auto-degradation
+│   │   ├── fallback.py               # Topological greedy fallback scheduler
+│   │   ├── incremental_planner.py    # Delta-replanning on course completion
+│   │   ├── validator.py              # Independent Solution Feasibility Validator
+│   │   ├── prereq_loader.py          # Prerequisite hypergraph loader
+│   │   ├── cache.py                  # Solver plan cache
+│   │   └── metrics.py                # Prometheus metrics exporter
+│   │
+│   └── trace/                        # OpenTelemetry tracing helpers
+│       ├── context.py                # W3C trace context injection/extraction
+│       └── setup.py                  # Tracer provider initialization
+│
+├── test/                             # Automated test suite (54 Passing Tests)
+│   ├── fixtures/                     # Real syllabus fixtures with gold-standard labels
+│   ├── integration/                  # Full pipeline & decision loop integration tests
+│   ├── load/                         # Concurrency & queue stress tests
+│   └── unit/                         # Isolated algorithmic unit tests
+│
+└── web/                              # Next.js 14 App Router frontend application
+    ├── Dockerfile                    # Production web container build
+    ├── package.json                  # Node dependencies (Next.js 14, React 18, Tailwind, Lucide)
+    ├── tailwind.config.ts            # Design system color tokens & typography
+    ├── app/                          # Next.js 14 App Router pages
+    │   ├── layout.tsx                # Root layout with navbar and role provider
+    │   ├── page.tsx                  # Identity login & role selection screen
+    │   ├── student/                  # Learner Portal (Profile, Gaps, Pathways, Bridges, Audit)
+    │   ├── hei/                      # HEI Review Portal (Queue, BoS Approval, Analytics)
+    │   └── gov/                      # National Dashboard (Mobility Matrix, Compliance)
+    ├── components/                   # Modular React UI components
+    │   ├── auth/                     # DigiLocker login modal & role switchers
+    │   ├── profile/                  # Student academic profile & transcript panels
+    │   ├── pathways/                 # Interactive Gantt & term schedule cards
+    │   ├── gaps/                     # Missing outcome diagnostics & bridge suggestions
+    │   ├── ledger/                   # Audit trail timeline & cryptographic proof cards
+    │   ├── hei/                      # Review cards, diff views, & approval dialogs
+    │   ├── gov/                      # Mobility charts, metric counters, & heatmap
+    │   ├── tree/                     # Prerequisite DAG graph visualizer
+    │   └── layout/                   # Navbar, footer, and shell components
+    └── lib/                          # Client libraries, API hooks, & transforms
+        ├── api/                      # Async API client & SWR hooks
+        ├── hooks/                    # useRequireRole & authentication hooks
+        ├── store/                    # Zustand session & application store
+        ├── transforms/               # Data adapters mapping API DTOs to UI models
+        ├── constants/                # UI mock fixtures & fallback data
+        └── utils/                    # Formatting & utility helpers
 ```
 
 ---
 
 ## Installation & Setup
 
-### Prerequisites
-- Python `3.11.x`
-- PostgreSQL `16+` with `pgvector` extension (Optional for standalone in-memory test mode)
-- Git
+You can run EduPathAI either as a single-command containerized stack with Docker Compose or natively for local development.
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/your-org/edupathai.git
-cd edupathai
-```
+### Option A: Quickstart with Docker Compose (Recommended)
 
-### 2. Environment Setup
+1. **Clone and configure:**
+   ```bash
+   git clone https://github.com/your-org/edupathai.git
+   cd edupathai
+   cp .env.example .env
+   ```
+
+2. **Launch all services:**
+   ```bash
+   docker compose up --build
+   ```
+   This automatically initializes:
+   - **PostgreSQL 16 + pgvector** on `localhost:5432` with all 5 schema migrations applied.
+   - **FastAPI Backend** on `http://localhost:8000` (OpenAPI docs at `http://localhost:8000/docs`).
+   - **Next.js 14 Web Portal** on `http://localhost:3000`.
+
+3. **Seed demo data:**
+   In a separate terminal, seed real pipeline data for 5 demo students:
+   ```bash
+   docker compose exec api python scripts/seed.py
+   ```
+
+4. **Access the application:**
+   Open `http://localhost:3000` and sign in with any of the demo APAAR numbers (e.g., `000000002201` for Priya Sharma).
+
+---
+
+### Option B: Local Native Development
+
+#### 1. Backend Setup
+
 ```bash
+# Create and activate virtual environment
 python -m venv .venv
-
+# On Windows (PowerShell):
+.venv\Scripts\Activate.ps1
 # On Linux/macOS:
 source .venv/bin/activate
 
-# On Windows (PowerShell):
-.venv\Scripts\Activate.ps1
-```
-
-### 3. Install Dependencies
-```bash
+# Install dependencies
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 4. Run Test Suite (Validation Gate)
-Verify that all 54 unit and integration tests pass cleanly:
+#### 2. Run Test Suite (Validation Gate)
+Verify all 54 unit and integration tests pass cleanly:
 ```bash
-# Run all unit tests (44 passed)
-pytest test/unit
-
-# Run all integration tests (10 passed)
-pytest test/integration
+pytest test/ -v
 ```
 
-### 5. Launch the Service
+#### 3. Start Backend API
 ```bash
-# Start FastAPI application with live reload
 uvicorn services.api.server:app --host 0.0.0.0 --port 8000 --reload
 ```
 Check health endpoint:
 ```bash
 curl http://127.0.0.1:8000/health
-# Output: {"status":"ok","service":"EduPathAI"}
+# {"status":"ok","service":"EduPathAI","database":"configured"}
 ```
+
+#### 4. Frontend Setup
+```bash
+cd web
+npm install
+npm run dev
+```
+Open `http://localhost:3000` in your browser.
 
 ---
 
@@ -546,21 +661,57 @@ EduPathAI is configured via environment variables and institutional policy JSON 
 
 | Variable | Type | Category | Default | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| `DATABASE_URL` | String | Required (Prod) | `""` (runs in-memory) | Async PostgreSQL connection string |
-| `SOLVER_TIMEOUT_SECONDS`| Integer | Optional | `30` | Hard timeout budget for OR-Tools CBC solver |
-| `SOLVER_MAX_TERMS` | Integer | Optional | `12` | Upper bound on allowable graduation terms |
-| `MAX_CREDITS_PER_TERM` | Float | Optional | `24.0` | Maximum allowable credit workload per term |
-| `MIN_CREDITS_PER_TERM` | Float | Optional | `12.0` | Minimum standard full-time credit workload |
-| `GEMINI_API_KEY` | String | Optional (AI) | `""` | Google Gemini API key for outcome extraction |
-| `OPENAI_API_KEY` | String | Optional (AI) | `""` | Fallback OpenAI API key for cross-model consensus |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`| String | Optional (Obs) | `""` | OpenTelemetry collector endpoint |
-| `LOG_LEVEL` | String | Dev / Prod | `"INFO"` | Logging verbosity (`DEBUG`, `INFO`, `WARNING`) |
+| `DATABASE_URL` | String | Storage | `""` (falls back to memory) | Async PostgreSQL connection string (`postgresql+asyncpg://...`) |
+| `SOLVER_TIMEOUT_SECONDS`| Integer | Optimization | `30` | Hard timeout budget for OR-Tools CBC solver |
+| `SOLVER_MAX_TERMS` | Integer | Optimization | `12` | Upper bound on allowable graduation terms |
+| `MAX_CREDITS_PER_TERM` | Float | Optimization | `24.0` | Maximum allowable credit workload per term |
+| `MIN_CREDITS_PER_TERM` | Float | Optimization | `12.0` | Minimum standard full-time credit workload |
+| `GEMINI_API_KEY` | String | AI / Gateway | `""` | Google Gemini API key for outcome extraction |
+| `OPENAI_API_KEY` | String | AI / Gateway | `""` | Fallback OpenAI API key for cross-model consensus |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`| String | Telemetry | `""` | OpenTelemetry collector endpoint |
+| `LOG_LEVEL` | String | Logging | `"INFO"` | Logging verbosity (`DEBUG`, `INFO`, `WARNING`) |
+| `NEXT_PUBLIC_API_URL` | String | Frontend | `http://localhost:8000` | Backend API URL for Next.js web client |
 
 ---
 
 ## API & Schema Contracts
 
-All service boundaries conform to the frozen interfaces defined in [`services/schemas.py`](services/schemas.py).
+The backend exposes a modular REST API structured across 8 distinct route domains mounted at `/v1/*`:
+
+### API Route Endpoints
+
+| Domain | Route | Method | Description |
+| :--- | :--- | :--- | :--- |
+| **Auth** | `/v1/auth/digilocker` | `POST` | Authenticate via 12-digit APAAR / ABC ID; returns session token & profile |
+| | `/v1/auth/session` | `POST` | Create a new authenticated user session |
+| | `/v1/auth/session/{token}` | `GET` | Validate active session token and retrieve persona |
+| | `/v1/auth/session/{token}` | `DELETE` | Terminate active user session |
+| **Pathways** | `/v1/pathway/request` | `POST` | Execute end-to-end recognition, gap analysis, & PATH-SOLVE optimization |
+| | `/v1/pathway/student/{id}` | `GET` | Retrieve latest calculated pathway response for student |
+| **Audit Ledger**| `/v1/audit/ledger` | `GET` | List immutable SHA-256 chained audit events by institution |
+| | `/v1/audit/ledger/verify` | `GET` | Cryptographically verify partition hash-chain integrity |
+| | `/v1/audit/decision/{id}` | `GET` | Retrieve 13-tuple DecisionBundle snapshot for a decision |
+| | `/v1/audit/decision/{id}/proof` | `GET` | Generate cryptographic inclusion proof for decision |
+| | `/v1/audit/decision/{id}/pdf` | `GET` | Export downloadable cryptographically signed PDF audit certificate |
+| **Students** | `/v1/students/search` | `GET` | Search students by name, APAAR ID, or institution |
+| | `/v1/students/{id}` | `GET` | Retrieve full student academic profile and verified credits |
+| | `/v1/students/{id}/gaps` | `GET` | Retrieve diagnosed outcome and laboratory gaps |
+| | `/v1/students/{id}/bridges`| `GET` | Retrieve recommended remedial bridge course allocations |
+| | `/v1/students/{id}/evidence`| `POST` | Upload and verify new transcript or certificate evidence |
+| **Courses** | `/v1/courses` | `GET` | Search receiving institution course catalog |
+| | `/v1/courses/{code}` | `GET` | Get detailed course syllabus and prerequisite requirements |
+| **Bridges** | `/v1/bridges` | `GET` | Query accredited remedial bridge catalog (NPTEL, SWAYAM, Virtual Labs) |
+| | `/v1/bridges/search` | `GET` | Search bridge modules by target outcome or keyword |
+| **HEI Review**| `/v1/hei/queue` | `GET` | List pending transfer cases requiring Board of Studies review |
+| | `/v1/hei/decision/{id}` | `GET` | Get detailed equivalence dossier and outcome diff for review |
+| | `/v1/hei/review` | `POST` | Submit faculty review (Approve / Reject / Request Bridge) with rationale |
+| | `/v1/hei/analytics/summary`| `GET` | HEI-level transfer approval velocity and gap analytics |
+| | `/v1/hei/institutions` | `GET` | List participating Higher Education Institutions |
+| **Government**| `/v1/gov/stats` | `GET` | National-level credit transfer metrics, volume, and pass rates |
+| | `/v1/gov/mobility-matrix` | `GET` | Inter-institutional student mobility transition matrix |
+| | `/v1/gov/anomalies` | `GET` | Identify credit transfer anomalies and policy violations |
+| | `/v1/gov/institutions` | `GET` | National HEI compliance directory |
+| | `/v1/gov/compliance` | `GET` | NEP 2020 & NCrF regulation compliance breakdown |
 
 ### Core Request & Response Flow
 
@@ -959,14 +1110,17 @@ pytest test/integration/test_decision_loop.py -v -s
 
 ## Screenshots & UI Walkthrough
 
-*(UI Frontend is currently under active scaffold development in `web/`)*
+EduPathAI provides three dedicated, responsive web portals implemented in Next.js 14 (`web/app/`):
 
-| Screen | File Location | Evaluation Checkpoints for Reviewers |
+| Portal / View | Route | Key Capabilities & Evaluation Checkpoints |
 | :--- | :--- | :--- |
-| **Learner Dashboard** | `docs/screenshots/dashboard.png` *(Planned)* | Displays verified transcript evidence, recognized credits, and remaining degree requirements. |
-| **Equivalence Dossier** | `docs/screenshots/recognition.png` *(Planned)* | Side-by-side syllabus comparison highlighting matched vs. missing learning outcomes with confidence scores. |
-| **Pathway Explorer** | `docs/screenshots/pathway.png` *(Planned)* | Interactive Gantt chart comparing `FASTEST`, `BALANCED`, and `MAX_PRESERVATION` semester schedules. |
-| **Audit Inspector** | `docs/screenshots/audit.png` *(Planned)* | Administrative view of the SHA-256 hash-chained ledger and frozen Decision Bundle parameters. |
+| **Learner Dashboard** | [`/student`](web/app/student/page.tsx) | Displays verified APAAR academic credits, target degree progress, and quick pathway triggers. |
+| **Prerequisite Transfer Tree**| [`/student/tree`](web/app/student/tree/page.tsx) | Visual DAG of recognized vs missing prerequisite courses with status indicators. |
+| **Gap & Bridge Diagnostics** | [`/student/gaps`](web/app/student/gaps/page.tsx) | Granular missing outcome inspection and accredited bridge course allocations (NPTEL/SWAYAM). |
+| **Pathway Explorer** | [`/student/pathways`](web/app/student/pathways/page.tsx) | Interactive term-by-term schedules comparing `FASTEST`, `BALANCED`, and `MAX_PRESERVATION` modes. |
+| **Cryptographic Audit Proof**| [`/student/audit/[decisionId]`](web/app/student/audit/%5BdecisionId%5D/page.tsx) | Cryptographic SHA-256 ledger proof verification with one-click official PDF certificate download. |
+| **HEI Review Portal** | [`/hei`](web/app/hei/page.tsx) | Board of Studies equivalence queue with side-by-side syllabus diffs and one-click BoS decisioning. |
+| **National Government Dashboard**| [`/gov`](web/app/gov/page.tsx) | Interstate credit mobility transition matrix, NEP 2020 compliance heatmaps, and transfer anomaly alerts. |
 
 ---
 

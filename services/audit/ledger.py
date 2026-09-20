@@ -34,7 +34,7 @@ class Ledger:
         # In-memory storage for test/standalone mode without active PostgreSQL
         self._mem_chain_heads: dict[str, str] = {"global": "GENESIS"}
         self._mem_records: dict[str, list[AuditRecord]] = {"global": []}
-        self._mem_by_decision: dict[UUID, AuditRecord] = {}
+        self._mem_history: dict[UUID, list[AuditRecord]] = {}
 
     async def append(
         self,
@@ -47,12 +47,26 @@ class Ledger:
         ai_recommendation: str,
         trace_id: str,
         chain_id: str = "global",
+        human_decision: str | None = None,
+        auditor_name: str | None = None,
+        auditor_role: str | None = None,
     ) -> AuditRecord:
-        """Append with retry on serialization failure."""
+        """
+        Append with retry on serialization failure.
+
+        Pass human_decision/auditor_name/auditor_role for a HEI review
+        entry (POST /v1/hei/decision/{id}/approve|reject) — this appends
+        a NEW chained record referencing the same decision_id, rather
+        than mutating the original AI-recommendation record. Mutating a
+        past record in place would break hash-chain verification; the
+        ledger is append-only by design (see README "Three Truths
+        Separation" — Decision Truth is itself a hash-chained event).
+        """
         if self.db is None:
             return self._append_memory(
                 decision_id, bundle, input_hash, output_hash,
                 confidence, evidence, ai_recommendation, trace_id, chain_id,
+                human_decision, auditor_name, auditor_role,
             )
 
         last_err: Exception | None = None
@@ -61,6 +75,7 @@ class Ledger:
                 return await self._append_once(
                     decision_id, bundle, input_hash, output_hash,
                     confidence, evidence, ai_recommendation, trace_id, chain_id,
+                    human_decision, auditor_name, auditor_role,
                 )
             except Exception as e:
                 # Retry on asyncpg.SerializationError or similar
@@ -79,6 +94,9 @@ class Ledger:
         ai_recommendation: str,
         trace_id: str,
         chain_id: str,
+        human_decision: str | None = None,
+        auditor_name: str | None = None,
+        auditor_role: str | None = None,
     ) -> AuditRecord:
         prev_hash = self._mem_chain_heads.get(chain_id, "GENESIS")
         rec_id = uuid4()
@@ -96,9 +114,11 @@ class Ledger:
             confidence=confidence,
             evidence=evidence,
             ai_recommendation=ai_recommendation,
-            human_decision=None,
+            human_decision=human_decision,
             trace_id=trace_id,
             timestamp=timestamp,
+            auditor_name=auditor_name,
+            auditor_role=auditor_role,
         )
         canonical = self._canonical(rec)
         current_hash = hashlib.sha256((prev_hash + canonical).encode()).hexdigest()
@@ -106,7 +126,7 @@ class Ledger:
 
         self._mem_chain_heads[chain_id] = current_hash
         self._mem_records.setdefault(chain_id, []).append(rec)
-        self._mem_by_decision[decision_id] = rec
+        self._mem_history.setdefault(decision_id, []).append(rec)
         return rec
 
     async def _append_once(
@@ -120,6 +140,9 @@ class Ledger:
         ai_recommendation: str,
         trace_id: str,
         chain_id: str,
+        human_decision: str | None = None,
+        auditor_name: str | None = None,
+        auditor_role: str | None = None,
     ) -> AuditRecord:
         async with self.db.acquire() as conn:
             async with conn.transaction(isolation="serializable"):
@@ -153,9 +176,11 @@ class Ledger:
                     confidence=confidence,
                     evidence=evidence,
                     ai_recommendation=ai_recommendation,
-                    human_decision=None,
+                    human_decision=human_decision,
                     trace_id=trace_id,
                     timestamp=timestamp,
+                    auditor_name=auditor_name,
+                    auditor_role=auditor_role,
                 )
 
                 # 3. Compute hash
@@ -170,14 +195,16 @@ class Ledger:
                         id, chain_id, recommendation_id, decision_id,
                         previous_hash, current_hash, bundle_id,
                         input_hash, output_hash, confidence, evidence,
-                        ai_recommendation, trace_id, timestamp
-                    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+                        ai_recommendation, human_decision, trace_id, timestamp,
+                        auditor_name, auditor_role
+                    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
                     """,
                     rec.id, rec.chain_id, rec.recommendation_id, rec.decision_id,
                     rec.previous_hash, rec.current_hash, rec.bundle_id,
                     rec.input_hash, rec.output_hash, rec.confidence,
-                    json.dumps([asdict(e) for e in rec.evidence]),
-                    rec.ai_recommendation, rec.trace_id, rec.timestamp,
+                    [asdict(e) for e in rec.evidence],
+                    rec.ai_recommendation, rec.human_decision, rec.trace_id, rec.timestamp,
+                    rec.auditor_name, rec.auditor_role,
                 )
 
                 # 5. Update chain head
@@ -188,21 +215,15 @@ class Ledger:
 
                 return rec
 
-    async def get_by_decision_id(self, decision_id: UUID) -> Optional[AuditRecord]:
-        if self.db is None:
-            return self._mem_by_decision.get(decision_id)
-        row = await self.db.fetchrow(
-            """
-            SELECT id, chain_id, previous_hash, current_hash, recommendation_id, decision_id,
-                   bundle_id, input_hash, output_hash, confidence, evidence,
-                   ai_recommendation, human_decision, trace_id, timestamp
-            FROM audit_ledger
-            WHERE decision_id = $1
-            """,
-            decision_id,
-        )
-        if not row:
-            return None
+    _SELECT_COLUMNS = """
+        id, chain_id, previous_hash, current_hash, recommendation_id, decision_id,
+        bundle_id, input_hash, output_hash, confidence, evidence,
+        ai_recommendation, human_decision, trace_id, timestamp,
+        auditor_name, auditor_role
+    """
+
+    def _row_to_record(self, row: dict) -> AuditRecord:
+        raw_evidence = row["evidence"]
         return AuditRecord(
             id=row["id"],
             recommendation_id=row["recommendation_id"],
@@ -214,12 +235,71 @@ class Ledger:
             input_hash=row["input_hash"],
             output_hash=row["output_hash"],
             confidence=float(row["confidence"]),
-            evidence=[EvidenceRef(**e) for e in (json.loads(row["evidence"]) if isinstance(row["evidence"], str) else row["evidence"])],
+            evidence=[EvidenceRef(**e) for e in (json.loads(raw_evidence) if isinstance(raw_evidence, str) else raw_evidence)],
             ai_recommendation=row["ai_recommendation"],
             human_decision=row["human_decision"],
             trace_id=row["trace_id"],
             timestamp=row["timestamp"],
+            auditor_name=row.get("auditor_name"),
+            auditor_role=row.get("auditor_role"),
         )
+
+    async def get_by_decision_id(self, decision_id: UUID) -> Optional[AuditRecord]:
+        """Returns the original AI-recommendation record for this decision
+        (earliest in the chain) — the record every /v1/audit/{id} link points to."""
+        if self.db is None:
+            history = self._mem_history.get(decision_id) or []
+            return history[0] if history else None
+        row = await self.db.fetchrow(
+            f"""
+            SELECT {self._SELECT_COLUMNS}
+            FROM audit_ledger
+            WHERE decision_id = $1
+            ORDER BY timestamp ASC
+            LIMIT 1
+            """,
+            decision_id,
+        )
+        if not row:
+            return None
+        return self._row_to_record(row)
+
+    async def get_history(self, decision_id: UUID) -> list[AuditRecord]:
+        """All ledger entries for this decision (AI recommendation, then any
+        human review) in chronological order — powers the DecisionTimeline UI."""
+        if self.db is None:
+            return list(self._mem_history.get(decision_id) or [])
+        rows = await self.db.fetch(
+            f"""
+            SELECT {self._SELECT_COLUMNS}
+            FROM audit_ledger
+            WHERE decision_id = $1
+            ORDER BY timestamp ASC
+            """,
+            decision_id,
+        )
+        return [self._row_to_record(r) for r in rows]
+
+    async def list_recent(self, chain_id: str | None = None, limit: int = 50) -> list[AuditRecord]:
+        """Most recent ledger entries — powers GET /v1/audit/list."""
+        if self.db is None:
+            records = self._mem_records.get(chain_id, []) if chain_id else [
+                r for recs in self._mem_records.values() for r in recs
+            ]
+            return sorted(records, key=lambda r: r.timestamp, reverse=True)[:limit]
+        if chain_id:
+            rows = await self.db.fetch(
+                f"SELECT {self._SELECT_COLUMNS} FROM audit_ledger "
+                f"WHERE chain_id = $1 ORDER BY timestamp DESC LIMIT $2",
+                chain_id, limit,
+            )
+        else:
+            rows = await self.db.fetch(
+                f"SELECT {self._SELECT_COLUMNS} FROM audit_ledger "
+                f"ORDER BY timestamp DESC LIMIT $1",
+                limit,
+            )
+        return [self._row_to_record(r) for r in rows]
 
     async def verify(self, chain_id: str = "global") -> None:
         """Walk the chain and confirm every link is intact."""

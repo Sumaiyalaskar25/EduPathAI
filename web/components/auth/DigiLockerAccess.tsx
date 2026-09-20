@@ -4,8 +4,11 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Fingerprint, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils/cn";
 import type { IdentityMode } from "@/lib/constants/demo-auth";
+import { useVerifyIdentity } from "@/lib/api/hooks";
+import { useSessionStore } from "@/lib/store/session";
 
 /** Where each identity mode should land after successful auth. */
 const IDENTITY_ROUTES: Record<IdentityMode, string> = {
@@ -26,18 +29,35 @@ export function DigiLockerAccess({ mode, modeLabel }: Props) {
   const [apaar, setApaar] = useState("");
   const [biometric, setBiometric] = useState(false);
   const [consent, setConsent] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const setSession = useSessionStore((s) => s.setSession);
+  const verify = useVerifyIdentity();
 
   const valid = apaar.replace(/\s/g, "").length === 12 && consent;
+  const loading = verify.isPending;
 
   const onVerify = async () => {
     if (!valid) return;
-    setLoading(true);
-    // Simulated auth delay — real integration: call an auth endpoint.
-    // Then route to the appropriate dashboard based on identity mode.
-    setTimeout(() => {
+    try {
+      const res = await verify.mutateAsync({ mode, identifier: apaar, consent });
+      setSession({
+        token: res.token,
+        role: res.role,
+        externalRef: res.external_ref,
+        displayName: res.display_name,
+        institution: res.institution ?? undefined,
+        programme: res.programme ?? undefined,
+        targetInstitution: res.target_institution ?? undefined,
+        targetProgramme: res.target_programme ?? undefined,
+      });
+      toast.success(`Verified — welcome, ${res.display_name}`);
       router.push(IDENTITY_ROUTES[mode]);
-    }, 600);
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? `Verification failed: ${err.message}`
+          : "Verification failed. Check the APAAR / ABC ID and try again."
+      );
+    }
   };
 
   return (

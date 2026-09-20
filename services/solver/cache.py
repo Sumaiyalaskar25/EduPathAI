@@ -59,7 +59,8 @@ class SolverCache:
         if not row:
             return None
 
-        data = json.loads(row["response"])
+        raw = row["response"]
+        data = json.loads(raw) if isinstance(raw, str) else raw
         pathways = [
             Pathway(
                 mode=PathwayMode(p["mode"]),
@@ -93,5 +94,5 @@ class SolverCache:
             ON CONFLICT (cache_key) DO UPDATE
             SET response = EXCLUDED.response, expires_at = EXCLUDED.expires_at
             """,
-            key, json.dumps(serialized), self.ttl_seconds,
+            key, serialized, self.ttl_seconds,
         )

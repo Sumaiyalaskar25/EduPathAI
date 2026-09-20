@@ -20,6 +20,12 @@ from services.bridge.resource_registry import ResourceRegistry
 from services.audit.ledger import Ledger
 from services.outbox.outbox import Outbox
 from services.solver.validator import PathwayValidator
+from services.db.students import ensure_student
+from services.matching.explain import generate_ai_recommendation
+
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class Matcher(Protocol):
@@ -45,6 +51,7 @@ class Orchestrator:
         resources: ResourceRegistry,
         policy_loader: Any,
         validator: PathwayValidator | None = None,
+        db: Any = None,
     ):
         self.bundles = bundle_provider
         self.matcher = matcher
@@ -54,6 +61,10 @@ class Orchestrator:
         self.resources = resources
         self.policy_loader = policy_loader
         self.validator = validator or PathwayValidator()
+        # Optional Postgres pool (services/db/pool.py). None => in-memory
+        # mode: the pipeline still runs end to end, it just doesn't
+        # persist recognition_decisions/gaps/bridges for later retrieval.
+        self.db = db
         # Hypergraph cache
         self._hypergraphs: dict[str, PrereqHypergraph] = {}
 
@@ -137,9 +148,13 @@ class Orchestrator:
             )
             validated_pathways.append(p)
 
-        # 9. Audit Append
+        # 9. Audit Append — narrated by the AI gateway when a provider is
+        #    configured (services/matching/ai_gateway_factory.py); falls
+        #    back to the deterministic summary with zero keys set.
+        summary = self._summarize(statuses)
         trace_id = str(uuid4())
         decision_id = uuid4()
+        ai_recommendation = await generate_ai_recommendation(statuses, summary)
         audit_record = await self.ledger.append(
             decision_id=decision_id,
             bundle=bundle,
@@ -150,7 +165,7 @@ class Orchestrator:
             }),
             confidence=sum(m.semantic_score for m in matches) / max(len(matches), 1),
             evidence=[e for m in matches for e in m.evidence],
-            ai_recommendation=json.dumps(asdict(self._summarize(statuses))),
+            ai_recommendation=ai_recommendation,
             trace_id=trace_id,
             chain_id=institution,
         )
@@ -162,15 +177,79 @@ class Orchestrator:
             payload={"student_id": student_id, "decision_id": str(decision_id), "institution": institution},
         )
 
+        # 11. Persist for later retrieval (GET /v1/students/{id}/*, HEI queue,
+        #     gov aggregates). Best-effort: a persistence failure must not
+        #     fail a request that already has a valid, audited result.
+        if self.db is not None:
+            try:
+                await self._persist(student_id, decision_id, bundle.id, statuses, gaps, bridges)
+            except Exception as e:
+                log.error("persistence_failed decision_id=%s err=%s", decision_id, e)
+
         return PathwayResponse(
-            recognition=self._summarize(statuses),
+            recognition=summary,
             gaps=gaps,
             pathways=validated_pathways,
             trace_id=trace_id,
             decision_id=decision_id,
             audit_event_ids=[audit_record.id],
             bundle=bundle,
+            matches=matches,
+            bridges=bridges,
         )
+
+    async def _persist(
+        self,
+        external_ref: str,
+        decision_id: UUID,
+        bundle_id: UUID,
+        statuses: list[tuple[MatchResult, RecognitionStatus]],
+        gaps: list[Gap],
+        bridges: list[Bridge],
+    ) -> None:
+        student_uuid = await ensure_student(self.db, external_ref)
+
+        for match, status in statuses:
+            await self.db.execute(
+                """
+                INSERT INTO recognition_decisions (
+                    id, student_id, source_course_id, target_course_id,
+                    status, confidence, bundle_id, evidence_refs,
+                    missing_outcomes, decision_id
+                ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+                """,
+                uuid4(), student_uuid, match.source_course_id, match.target_course_id,
+                status.value, match.semantic_score, bundle_id,
+                [asdict(e) for e in match.evidence],
+                [], decision_id,
+            )
+
+        for gap in gaps:
+            await self.db.execute(
+                """
+                INSERT INTO gaps (id, decision_id, student_id, gap_type, description, missing_outcomes)
+                VALUES ($1,$2,$3,$4,$5,$6)
+                ON CONFLICT (id) DO NOTHING
+                """,
+                gap.gap_id, decision_id, student_uuid, gap.gap_type.value,
+                gap.description, gap.missing_outcomes,
+            )
+
+        for bridge in bridges:
+            await self.db.execute(
+                """
+                INSERT INTO bridges (
+                    id, gap_id, decision_id, student_id, resource_id, resource_provider,
+                    resource_url, competency_coverage, duration_hours,
+                    assessment_available, recognition_status, prerequisite_met
+                ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+                ON CONFLICT (id) DO NOTHING
+                """,
+                bridge.bridge_id, bridge.gap_id, decision_id, student_uuid, bridge.resource_id,
+                bridge.resource_provider, bridge.resource_url, bridge.competency_coverage,
+                bridge.duration_hours, bridge.assessment_available,
+                bridge.recognition_status.value, bridge.prerequisite_met,
+            )
 
     @staticmethod
     def _hash(v: dict) -> str:
