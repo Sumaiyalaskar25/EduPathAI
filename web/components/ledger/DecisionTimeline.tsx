@@ -1,6 +1,6 @@
 "use client";
 
-import type { LedgerEvent } from "@/lib/constants/demo-ledger";
+import type { LedgerEvent } from "@/lib/view-models/ledger";
 import { TimelineSpine } from "./TimelineSpine";
 import { TimelineCard } from "./TimelineCard";
 

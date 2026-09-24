@@ -11,8 +11,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
-  TrendingUp,
-  Users,
+  HelpCircle,
+  ShieldAlert,
   ClipboardCheck,
   Sparkles,
   ArrowRight,
@@ -21,70 +21,94 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { BottomStrip } from "@/components/layout/BottomStrip";
-import { DEMO_STUDENT, DEMO_CHAIN } from "@/lib/constants/demo";
-import { getCourseById, DEMO_COURSES } from "@/lib/constants/demo-courses";
+import { CardSkeleton } from "@/components/feedback/Skeleton";
+import { useRequireRole } from "@/lib/hooks/useRequireRole";
+import { useCourse, useStudentProfile } from "@/lib/api/hooks";
+import type { RecognitionStatus } from "@/lib/api/types";
 import { cn } from "@/lib/utils/cn";
 
-function pct(n: number): string {
-  return `${Math.round(n * 100)}%`;
-}
-
-const STATUS_STYLE = {
-  DIRECT: {
-    bg: "bg-emerald-100",
-    fg: "text-emerald-800",
-    Icon: CheckCircle2,
-    label: "Direct match",
-  },
-  BRIDGE: {
-    bg: "bg-amber-100",
-    fg: "text-amber-900",
-    Icon: AlertTriangle,
-    label: "Bridge required",
-  },
-  MISSING: {
-    bg: "bg-rose-100",
-    fg: "text-rose-800",
-    Icon: XCircle,
-    label: "Missing",
-  },
-} as const;
+const STATUS_STYLE: Record<RecognitionStatus, { bg: string; fg: string; Icon: typeof CheckCircle2; label: string }> = {
+  DIRECT: { bg: "bg-emerald-100", fg: "text-emerald-800", Icon: CheckCircle2, label: "Direct match" },
+  BRIDGE: { bg: "bg-amber-100", fg: "text-amber-900", Icon: AlertTriangle, label: "Bridge required" },
+  MISSING: { bg: "bg-rose-100", fg: "text-rose-800", Icon: XCircle, label: "Missing" },
+  REVIEW: { bg: "bg-sky-100", fg: "text-sky-800", Icon: HelpCircle, label: "Review required" },
+  POLICY_CONFLICT: { bg: "bg-rose-100", fg: "text-rose-800", Icon: ShieldAlert, label: "Policy conflict" },
+};
 
 export default function CourseDetailPage() {
   const params = useParams<{ courseId: string }>();
-  const course = getCourseById(params?.courseId ?? "") ?? DEMO_COURSES[0];
+  const session = useRequireRole("learner");
+  const course = useCourse(params?.courseId);
+  const profile = useStudentProfile(session?.externalRef);
 
-  const status = STATUS_STYLE[course.recognitionStatus];
-  const StatusIcon = status.Icon;
+  if (!session) return null;
 
   const topBarRight = (
     <>
       <span className="pill hidden lg:inline-flex">
-        <span className="font-semibold text-text-primary">
-          APAAR: {DEMO_STUDENT.apaar}
-        </span>
+        <span className="font-semibold text-text-primary">{session.externalRef}</span>
         <span className="text-text-muted">·</span>
-        <span>{DEMO_STUDENT.programme}</span>
+        <span>{session.programme}</span>
       </span>
-      <span className="pill hidden md:inline-flex">
-        Chain ID: {DEMO_CHAIN.id}
-      </span>
-      <span className="relative inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-50 to-emerald-100 px-3.5 py-2 text-[11px] font-semibold text-emerald-800 shadow-sm">
-        <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+      {profile.data && (
+        <span className="relative inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-50 to-emerald-100 px-3.5 py-2 text-[11px] font-semibold text-emerald-800 shadow-sm">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+          </span>
+          <ShieldCheck className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Chain Integrity:</span>
+          <span>{profile.data.security.chain_integrity}</span>
         </span>
-        <ShieldCheck className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">Chain Integrity:</span>
-        <span>{DEMO_CHAIN.integrity}</span>
-      </span>
+      )}
     </>
   );
 
+  if (course.isLoading) {
+    return (
+      <AppShell title="Course Detail" subtitle="Loading…" topBarRight={topBarRight} reserveBottom>
+        <section className="mx-auto max-w-[1200px] space-y-5 px-4 pb-4 pt-4 md:px-6">
+          <CardSkeleton />
+          <CardSkeleton />
+        </section>
+      </AppShell>
+    );
+  }
+
+  if (course.isError || !course.data) {
+    return (
+      <AppShell title="Course Detail" subtitle="Not found" topBarRight={topBarRight} reserveBottom>
+        <section className="mx-auto max-w-[1200px] space-y-5 px-4 pb-4 pt-4 md:px-6">
+          <div className="card-warm rounded-3xl p-8 text-center">
+            <p className="text-[14px] font-semibold text-text-primary">
+              We couldn't load this course.
+            </p>
+            <p className="mt-2 text-[12.5px] text-text-secondary">
+              {course.error instanceof Error
+                ? course.error.message
+                : "It isn't in the course catalog yet."}
+            </p>
+            <Link
+              href="/student/pathways"
+              className="mt-5 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-navy-700 hover:underline"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back to pathways
+            </Link>
+          </div>
+        </section>
+      </AppShell>
+    );
+  }
+
+  const c = course.data;
+  const status = c.recognitionStatus ? STATUS_STYLE[c.recognitionStatus] : null;
+  const StatusIcon = status?.Icon;
+
   return (
     <AppShell
-      title={`${course.code} · ${course.title}`}
-      subtitle={course.semester}
+      title={`${c.code} · ${c.name}`}
+      subtitle={c.modality}
       topBarRight={topBarRight}
       reserveBottom
     >
@@ -127,41 +151,39 @@ export default function CourseDetailPage() {
                 </span>
                 <div>
                   <p className="font-mono text-[10.5px] font-bold uppercase tracking-[0.16em] text-text-muted">
-                    {course.code}
+                    {c.code}
                   </p>
                   <p className="mt-0.5 text-[11.5px] font-medium text-text-secondary">
-                    {course.institution} · {course.credits} credits
+                    {c.credits} credits · {c.modality}
                   </p>
                 </div>
               </div>
 
               <h1 className="mt-4 font-display text-[28px] font-bold leading-tight tracking-tighter text-text-primary md:text-[34px]">
-                {course.title}
+                {c.name}
               </h1>
 
               <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-text-secondary">
-                {course.description}
+                {c.description}
               </p>
 
               <div className="mt-5 flex flex-wrap gap-2">
                 <span className="pill">
                   <ClipboardCheck className="h-3.5 w-3.5" />
-                  {course.tag}
+                  {c.modality}
                 </span>
-                <span className="pill">
-                  <TrendingUp className="h-3.5 w-3.5" />
-                  Bloom Level {course.bloomLevel}
-                </span>
-                <span
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider",
-                    status.bg,
-                    status.fg
-                  )}
-                >
-                  <StatusIcon className="h-3 w-3" />
-                  {status.label}
-                </span>
+                {status && StatusIcon && (
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider",
+                      status.bg,
+                      status.fg
+                    )}
+                  >
+                    <StatusIcon className="h-3 w-3" />
+                    {status.label}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -171,14 +193,12 @@ export default function CourseDetailPage() {
                 Recognition score
               </p>
               <p className="mt-2 font-display text-[36px] font-bold leading-none tracking-tighter text-text-primary tabular-nums">
-                {course.mappedFrom
-                  ? pct(course.mappedFrom.similarity)
-                  : "—"}
+                {c.mappedFrom ? `${Math.round(c.mappedFrom.similarity * 100)}%` : "—"}
               </p>
               <p className="mt-3 text-[11px] leading-snug text-text-secondary">
-                {course.mappedFrom
-                  ? `Mapped from ${course.mappedFrom.code} at ${course.mappedFrom.institution}`
-                  : "Not mapped from any prior course"}
+                {c.mappedFrom
+                  ? `Mapped from ${c.mappedFrom.source_course}`
+                  : "Not mapped from any prior course yet"}
               </p>
             </div>
           </div>
@@ -208,56 +228,28 @@ export default function CourseDetailPage() {
                 </div>
               </header>
 
-              <ul className="mt-5 grid gap-2 md:grid-cols-2">
-                {course.competencies.map((c, i) => (
-                  <motion.li
-                    key={c}
-                    initial={{ opacity: 0, x: -4 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.25 + i * 0.05, duration: 0.35 }}
-                    className="flex items-start gap-2.5 rounded-xl border border-border-subtle bg-white/70 p-3.5"
-                  >
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                    <span className="text-[13px] font-medium leading-snug text-text-primary">
-                      {c}
-                    </span>
-                  </motion.li>
-                ))}
-              </ul>
-            </motion.section>
-
-            {/* Prerequisites */}
-            <motion.section
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="card-warm rounded-3xl p-7"
-            >
-              <header className="flex items-center gap-2.5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-100">
-                  <BookOpen className="h-4 w-4 text-amber-700" />
-                </span>
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-text-muted">
-                    Prerequisites
-                  </p>
-                  <h2 className="font-display text-[17px] font-bold tracking-tight text-text-primary">
-                    Courses required before this
-                  </h2>
-                </div>
-              </header>
-
-              <ul className="mt-5 space-y-2">
-                {course.prerequisites.map((p) => (
-                  <li
-                    key={p}
-                    className="flex items-center gap-2.5 text-[13px] font-medium text-text-primary"
-                  >
-                    <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500" />
-                    {p}
-                  </li>
-                ))}
-              </ul>
+              {c.competencies.length > 0 ? (
+                <ul className="mt-5 grid gap-2 md:grid-cols-2">
+                  {c.competencies.map((comp, i) => (
+                    <motion.li
+                      key={comp}
+                      initial={{ opacity: 0, x: -4 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.25 + i * 0.05, duration: 0.35 }}
+                      className="flex items-start gap-2.5 rounded-xl border border-border-subtle bg-white/70 p-3.5"
+                    >
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                      <span className="text-[13px] font-medium leading-snug text-text-primary">
+                        {comp}
+                      </span>
+                    </motion.li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-4 text-[12.5px] text-text-secondary">
+                  No learning outcomes on file for this course yet.
+                </p>
+              )}
             </motion.section>
           </div>
 
@@ -270,10 +262,10 @@ export default function CourseDetailPage() {
               className="card-warm rounded-3xl p-6"
             >
               <p className="text-[10.5px] font-bold uppercase tracking-wider text-text-muted">
-                Assessment
+                Modality
               </p>
               <p className="mt-2 text-[13px] leading-relaxed text-text-primary">
-                {course.assessedBy}
+                {c.modality}
               </p>
 
               <div className="my-5 border-t border-border-subtle" />
@@ -282,10 +274,10 @@ export default function CourseDetailPage() {
                 Credits
               </p>
               <p className="mt-2 font-display text-[28px] font-bold leading-none tracking-tight text-text-primary tabular-nums">
-                {course.credits}
+                {c.credits}
               </p>
 
-              {course.mappedFrom && (
+              {c.mappedFrom && (
                 <>
                   <div className="my-5 border-t border-border-subtle" />
                   <p className="text-[10.5px] font-bold uppercase tracking-wider text-text-muted">
@@ -293,14 +285,9 @@ export default function CourseDetailPage() {
                   </p>
                   <div className="mt-2 flex items-start gap-2">
                     <Hash className="mt-0.5 h-3.5 w-3.5 shrink-0 text-text-muted" />
-                    <div>
-                      <p className="font-mono text-[12px] font-semibold text-text-primary">
-                        {course.mappedFrom.code}
-                      </p>
-                      <p className="mt-0.5 text-[11px] text-text-muted">
-                        {course.mappedFrom.institution}
-                      </p>
-                    </div>
+                    <p className="font-mono text-[12px] font-semibold text-text-primary">
+                      {c.mappedFrom.source_course}
+                    </p>
                   </div>
                 </>
               )}
@@ -316,12 +303,21 @@ export default function CourseDetailPage() {
                 <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-900">
-                    AI rationale
+                    Recognition status
                   </p>
                   <p className="mt-1 text-[12px] leading-relaxed text-emerald-900/80">
-                    {course.recognitionStatus === "DIRECT"
-                      ? "Strong outcome coverage and evidence quality across all competencies. Direct credit awarded."
-                      : "Partial outcome coverage detected. A bridge course is recommended before credit is awarded."}
+                    {c.recognitionStatus === "DIRECT" &&
+                      "Strong outcome coverage and evidence quality. Direct credit awarded."}
+                    {c.recognitionStatus === "BRIDGE" &&
+                      "Partial outcome coverage detected. A bridge course is recommended before credit is awarded."}
+                    {c.recognitionStatus === "MISSING" &&
+                      "No matching prior coursework found for this course yet."}
+                    {c.recognitionStatus === "REVIEW" &&
+                      "Evidence quality is inconclusive — this needs manual review before a decision is finalized."}
+                    {c.recognitionStatus === "POLICY_CONFLICT" &&
+                      "Semantic match found, but an institutional policy currently blocks recognition."}
+                    {!c.recognitionStatus &&
+                      "No recognition decision exists for this course yet — run a pathway analysis to generate one."}
                   </p>
                 </div>
               </div>
@@ -348,9 +344,9 @@ export default function CourseDetailPage() {
 
       <BottomStrip
         label={"Course\nDetail"}
-        statusTitle={`${course.code} · ${course.credits} credits · Bloom ${course.bloomLevel}`}
+        statusTitle={`${c.code} · ${c.credits} credits · ${c.modality}`}
         statusIcon={<Award className="h-4 w-4" />}
-        ctaLabel="Add to academic plan"
+        ctaLabel="Update academic plan"
         ctaHref="/student/plan/update"
       />
     </AppShell>

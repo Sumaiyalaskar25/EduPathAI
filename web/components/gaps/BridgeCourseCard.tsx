@@ -3,22 +3,18 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Plus, ArrowRight } from "lucide-react";
-import type { BridgeCourse } from "@/lib/constants/demo-gaps";
+import type { BridgeCourse } from "@/lib/view-models/gaps";
 
 interface BridgeCourseCardProps {
   course: BridgeCourse;
   index: number;
 }
 
-const PROVIDER_TO_BRIDGE_ID: Record<string, string> = {
-  NPTEL: "nptel-algo-3-4",
-  SWAYAM: "swayam-adv-thinking",
-  "V-Lab": "vlab-network-flow",
-};
-
 export function BridgeCourseCard({ course, index }: BridgeCourseCardProps) {
-  const bridgeId = PROVIDER_TO_BRIDGE_ID[course.provider] ?? "nptel-algo-3-4";
-  const detailHref = `/student/bridges/${bridgeId}`;
+  // course.id is the real bridge_id (see bridgesToCourseCards) — this
+  // used to look the link up from a 3-entry provider→fake-id map, which
+  // sent most real bridges to the wrong detail page.
+  const detailHref = `/student/bridges/${course.id}`;
 
   return (
     <motion.div

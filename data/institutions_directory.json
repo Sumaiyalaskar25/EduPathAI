@@ -1,101 +1,1163 @@
 [
-    {
-        "id": "iitb",
-        "name": "Indian Institute of Technology Bombay",
-        "short_name": "IIT Bombay",
-        "city": "Mumbai",
-        "state": "Maharashtra",
-        "type": "IIT",
-        "naac": "A++",
-        "joined_at": "2024-03-15",
-        "status": "active"
-    },
-    {
-        "id": "iitd",
-        "name": "Indian Institute of Technology Delhi",
-        "short_name": "IIT Delhi",
-        "city": "New Delhi",
-        "state": "Delhi",
-        "type": "IIT",
-        "naac": "A++",
-        "joined_at": "2024-03-15",
-        "status": "active"
-    },
-    {
-        "id": "iitm",
-        "name": "Indian Institute of Technology Madras",
-        "short_name": "IIT Madras",
-        "city": "Chennai",
-        "state": "Tamil Nadu",
-        "type": "IIT",
-        "naac": "A++",
-        "joined_at": "2024-04-02",
-        "status": "active"
-    },
-    {
-        "id": "iitk",
-        "name": "Indian Institute of Technology Kanpur",
-        "short_name": "IIT Kanpur",
-        "city": "Kanpur",
-        "state": "Uttar Pradesh",
-        "type": "IIT",
-        "naac": "A++",
-        "joined_at": "2024-04-18",
-        "status": "active"
-    },
-    {
-        "id": "nitt",
-        "name": "National Institute of Technology Tiruchirappalli",
-        "short_name": "NIT Trichy",
-        "city": "Tiruchirappalli",
-        "state": "Tamil Nadu",
-        "type": "NIT",
-        "naac": "A+",
-        "joined_at": "2024-05-10",
-        "status": "active"
-    },
-    {
-        "id": "vit",
-        "name": "Vellore Institute of Technology",
-        "short_name": "VIT Vellore",
-        "city": "Vellore",
-        "state": "Tamil Nadu",
-        "type": "Deemed",
-        "naac": "A++",
-        "joined_at": "2024-06-01",
-        "status": "active"
-    },
-    {
-        "id": "bits",
-        "name": "Birla Institute of Technology and Science",
-        "short_name": "BITS Pilani",
-        "city": "Pilani",
-        "state": "Rajasthan",
-        "type": "Deemed",
-        "naac": "A",
-        "joined_at": "2024-06-22",
-        "status": "active"
-    },
-    {
-        "id": "cu",
-        "name": "University of Calcutta",
-        "short_name": "University of Calcutta",
-        "city": "Kolkata",
-        "state": "West Bengal",
-        "type": "State",
-        "naac": "A",
-        "joined_at": "2024-08-11",
-        "status": "active"
-    },
-    {
-        "id": "au",
-        "name": "Anna University",
-        "short_name": "Anna University",
-        "city": "Chennai",
-        "state": "Tamil Nadu",
-        "type": "State",
-        "naac": "A+",
-        "joined_at": "2024-07-19",
-        "status": "active"
-    }
+  {
+    "id": "INST-002",
+    "name": "ABES Engineering College",
+    "short_name": "ABES Engineering College",
+    "city": "Ghaziabad",
+    "state": "Uttar Pradesh",
+    "type": "A",
+    "status": "active"
+  },
+  {
+    "id": "INST-003",
+    "name": "Academy of Technology",
+    "short_name": "Academy of Technology",
+    "city": "Hooghly",
+    "state": "West Bengal",
+    "type": "A",
+    "status": "active"
+  },
+  {
+    "id": "INST-004",
+    "name": "Acharya Institute of Technology",
+    "short_name": "Acharya Institute of Technology",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "type": "A",
+    "status": "active"
+  },
+  {
+    "id": "INST-005",
+    "name": "Acropolis Institute Of Technology And Research",
+    "short_name": "Acropolis Institute Of Technology A...",
+    "city": "Indore",
+    "state": "Madhya Pradesh",
+    "type": "A",
+    "status": "active"
+  },
+  {
+    "id": "INST-006",
+    "name": "Aditya Institute of Technology and Management",
+    "short_name": "Aditya Institute of Technology and ...",
+    "city": "Tekkali",
+    "state": "Andhra Pradesh",
+    "type": "A",
+    "status": "active"
+  },
+  {
+    "id": "INST-007",
+    "name": "Alagappa Chettiar Government College of Engineering and Technology",
+    "short_name": "Alagappa Chettiar Government Colleg...",
+    "city": "Sivaganga",
+    "state": "Tamil Nadu",
+    "type": "A",
+    "status": "active"
+  },
+  {
+    "id": "INST-001",
+    "name": "A P Shah Institute Of Technology",
+    "short_name": "A P Shah Institute Of Technology",
+    "city": "Thane",
+    "state": "Maharashtra",
+    "type": "A",
+    "status": "active"
+  },
+  {
+    "id": "INST-008",
+    "name": "Asansol Engineering College",
+    "short_name": "Asansol Engineering College",
+    "city": "Asansol",
+    "state": "West Bengal",
+    "type": "A",
+    "status": "active"
+  },
+  {
+    "id": "INST-011",
+    "name": "Banasthali Vidyapith",
+    "short_name": "Banasthali Vidyapith",
+    "city": "Banasthali",
+    "state": "Rajasthan",
+    "type": "B",
+    "status": "active"
+  },
+  {
+    "id": "INST-010",
+    "name": "Bangalore Institute of Technology",
+    "short_name": "Bangalore Institute of Technology",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "type": "B",
+    "status": "active"
+  },
+  {
+    "id": "INST-012",
+    "name": "Bapatla Engineering College",
+    "short_name": "Bapatla Engineering College",
+    "city": "Bapatla",
+    "state": "Andhra Pradesh",
+    "type": "B",
+    "status": "active"
+  },
+  {
+    "id": "INST-013",
+    "name": "Bapuji Institute of Engineering & Technology",
+    "short_name": "Bapuji Institute of Engineering & T...",
+    "city": "Davangere",
+    "state": "Karnataka",
+    "type": "B",
+    "status": "active"
+  },
+  {
+    "id": "INST-014",
+    "name": "Basaveshwar Engineering College",
+    "short_name": "Basaveshwar Engineering College",
+    "city": "Bagalkot",
+    "state": "Karnataka",
+    "type": "B",
+    "status": "active"
+  },
+  {
+    "id": "INST-015",
+    "name": "Bengal College of Engineering & Technology",
+    "short_name": "Bengal College of Engineering & Tec...",
+    "city": "Durgapur",
+    "state": "West Bengal",
+    "type": "B",
+    "status": "active"
+  },
+  {
+    "id": "INST-016",
+    "name": "Birla Institute of Technology",
+    "short_name": "Birla Institute of Technology",
+    "city": "Ranchi",
+    "state": "Jharkhand",
+    "type": "B",
+    "status": "active"
+  },
+  {
+    "id": "INST-009",
+    "name": "B.M.S. College of Engineering",
+    "short_name": "B.M.S. College of Engineering",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "type": "B",
+    "status": "active"
+  },
+  {
+    "id": "INST-018",
+    "name": "Calcutta Institute of Technology",
+    "short_name": "Calcutta Institute of Technology",
+    "city": "Uluberia",
+    "state": "West Bengal",
+    "type": "C",
+    "status": "active"
+  },
+  {
+    "id": "INST-019",
+    "name": "Canara Engineering College",
+    "short_name": "Canara Engineering College",
+    "city": "Mangaluru",
+    "state": "Karnataka",
+    "type": "C",
+    "status": "active"
+  },
+  {
+    "id": "INST-020",
+    "name": "Chandigarh Engineering College Jhanjeri",
+    "short_name": "Chandigarh Engineering College Jhan...",
+    "city": "Sahibzada Ajit Singh Nagar",
+    "state": "Punjab",
+    "type": "C",
+    "status": "active"
+  },
+  {
+    "id": "INST-021",
+    "name": "Chennai Institute of Technology",
+    "short_name": "Chennai Institute of Technology",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "type": "C",
+    "status": "active"
+  },
+  {
+    "id": "INST-022",
+    "name": "Chitkara University",
+    "short_name": "Chitkara University",
+    "city": "Rajpura",
+    "state": "Punjab",
+    "type": "C",
+    "status": "active"
+  },
+  {
+    "id": "INST-128",
+    "name": "Chitkara University Himachal Pradesh",
+    "short_name": "Chitkara University Himachal Prades...",
+    "city": "Solan",
+    "state": "Himachal Pradesh",
+    "type": "C",
+    "status": "active"
+  },
+  {
+    "id": "INST-023",
+    "name": "Coimbatore Institute of Technology",
+    "short_name": "Coimbatore Institute of Technology",
+    "city": "Coimbatore",
+    "state": "Tamil Nadu",
+    "type": "C",
+    "status": "active"
+  },
+  {
+    "id": "INST-119",
+    "name": "College of Engineering, Pune",
+    "short_name": "College of Engineering, Pune",
+    "city": "Pune",
+    "state": "Maharashtra",
+    "type": "C",
+    "status": "active"
+  },
+  {
+    "id": "INST-024",
+    "name": "College of Engineering Trivandrum",
+    "short_name": "College of Engineering Trivandrum",
+    "city": "Thiruvananthapuram",
+    "state": "Kerala",
+    "type": "C",
+    "status": "active"
+  },
+  {
+    "id": "INST-017",
+    "name": "C.V. Raman Global University, Odisha",
+    "short_name": "C.V. Raman Global University, Odish...",
+    "city": "Bhubaneswar",
+    "state": "Odisha",
+    "type": "C",
+    "status": "active"
+  },
+  {
+    "id": "INST-025",
+    "name": "DIT University",
+    "short_name": "DIT University",
+    "city": "Dehradun",
+    "state": "Uttarakhand",
+    "type": "D",
+    "status": "active"
+  },
+  {
+    "id": "INST-027",
+    "name": "Dr. Ambedkar Institute of Technology",
+    "short_name": "Dr. Ambedkar Institute of Technolog...",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "type": "D",
+    "status": "active"
+  },
+  {
+    "id": "INST-026",
+    "name": "Dr. B.C. Roy Engineering College",
+    "short_name": "Dr. B.C. Roy Engineering College",
+    "city": "Durgapur",
+    "state": "West Bengal",
+    "type": "D",
+    "status": "active"
+  },
+  {
+    "id": "INST-028",
+    "name": "Dronacharya College of Engineering",
+    "short_name": "Dronacharya College of Engineering",
+    "city": "Gurgaon",
+    "state": "Haryana",
+    "type": "D",
+    "status": "active"
+  },
+  {
+    "id": "INST-029",
+    "name": "Dronacharya Group of Institutions",
+    "short_name": "Dronacharya Group of Institutions",
+    "city": "Greater Noida",
+    "state": "Uttar Pradesh",
+    "type": "D",
+    "status": "active"
+  },
+  {
+    "id": "INST-030",
+    "name": "Durgapur Institute of Advanced Technology and Management",
+    "short_name": "Durgapur Institute of Advanced Tech...",
+    "city": "Durgapur",
+    "state": "West Bengal",
+    "type": "D",
+    "status": "active"
+  },
+  {
+    "id": "INST-033",
+    "name": "East West Institute of Technology",
+    "short_name": "East West Institute of Technology",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "type": "E",
+    "status": "active"
+  },
+  {
+    "id": "INST-031",
+    "name": "Easwari Engineering College",
+    "short_name": "Easwari Engineering College",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "type": "E",
+    "status": "active"
+  },
+  {
+    "id": "INST-032",
+    "name": "Engineering College Bikaner",
+    "short_name": "Engineering College Bikaner",
+    "city": "Bikaner",
+    "state": "Rajasthan",
+    "type": "E",
+    "status": "active"
+  },
+  {
+    "id": "INST-035",
+    "name": "Fr. Conceicao Rodrigues College of Engineering",
+    "short_name": "Fr. Conceicao Rodrigues College of ...",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "type": "F",
+    "status": "active"
+  },
+  {
+    "id": "INST-034",
+    "name": "Fr. C. Rodrigues Institute of Technology",
+    "short_name": "Fr. C. Rodrigues Institute of Techn...",
+    "city": "Navi Mumbai",
+    "state": "Maharashtra",
+    "type": "F",
+    "status": "active"
+  },
+  {
+    "id": "INST-036",
+    "name": "Future Institute of Technology",
+    "short_name": "Future Institute of Technology",
+    "city": "Kolkata",
+    "state": "West Bengal",
+    "type": "F",
+    "status": "active"
+  },
+  {
+    "id": "INST-037",
+    "name": "Galgotias College of Engineering & Technology",
+    "short_name": "Galgotias College of Engineering & ...",
+    "city": "Greater Noida",
+    "state": "Uttar Pradesh",
+    "type": "G",
+    "status": "active"
+  },
+  {
+    "id": "INST-038",
+    "name": "Gandhi Engineering College (GEC)",
+    "short_name": "Gandhi Engineering College (GEC)",
+    "city": "Bhubaneswar",
+    "state": "Odisha",
+    "type": "G",
+    "status": "active"
+  },
+  {
+    "id": "INST-039",
+    "name": "GMR Institute of Technology",
+    "short_name": "GMR Institute of Technology",
+    "city": "Rajam",
+    "state": "Andhra Pradesh",
+    "type": "G",
+    "status": "active"
+  },
+  {
+    "id": "INST-040",
+    "name": "Gogte Institute of Technology",
+    "short_name": "Gogte Institute of Technology",
+    "city": "Belagavi",
+    "state": "Karnataka",
+    "type": "G",
+    "status": "active"
+  },
+  {
+    "id": "INST-041",
+    "name": "Gokaraju Rangaraju Institute of Engineering & Technology",
+    "short_name": "Gokaraju Rangaraju Institute of Eng...",
+    "city": "Hyderabad",
+    "state": "Telangana",
+    "type": "G",
+    "status": "active"
+  },
+  {
+    "id": "INST-042",
+    "name": "Government College of Engineering, Nagpur",
+    "short_name": "Government College of Engineering, ...",
+    "city": "Nagpur",
+    "state": "Maharashtra",
+    "type": "G",
+    "status": "active"
+  },
+  {
+    "id": "INST-043",
+    "name": "Government Engineering College, Thrissur",
+    "short_name": "Government Engineering College, Thr...",
+    "city": "Thrissur",
+    "state": "Kerala",
+    "type": "G",
+    "status": "active"
+  },
+  {
+    "id": "INST-044",
+    "name": "Graphic Era University",
+    "short_name": "Graphic Era University",
+    "city": "Dehradun",
+    "state": "Uttarakhand",
+    "type": "G",
+    "status": "active"
+  },
+  {
+    "id": "INST-045",
+    "name": "Haldia Institute of Technology",
+    "short_name": "Haldia Institute of Technology",
+    "city": "Haldia",
+    "state": "West Bengal",
+    "type": "H",
+    "status": "active"
+  },
+  {
+    "id": "INST-046",
+    "name": "Harcourt Butler Technical University",
+    "short_name": "Harcourt Butler Technical Universit...",
+    "city": "Kanpur Nagar",
+    "state": "Uttar Pradesh",
+    "type": "H",
+    "status": "active"
+  },
+  {
+    "id": "INST-047",
+    "name": "Heritage Institute of Technology",
+    "short_name": "Heritage Institute of Technology",
+    "city": "Kolkata",
+    "state": "West Bengal",
+    "type": "H",
+    "status": "active"
+  },
+  {
+    "id": "INST-048",
+    "name": "Hindustan Institute of Technology and Science",
+    "short_name": "Hindustan Institute of Technology a...",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "type": "H",
+    "status": "active"
+  },
+  {
+    "id": "INST-049",
+    "name": "Hyderabad Institute of Technology & Management",
+    "short_name": "Hyderabad Institute of Technology &...",
+    "city": "Hyderabad",
+    "state": "Telangana",
+    "type": "H",
+    "status": "active"
+  },
+  {
+    "id": "INST-051",
+    "name": "IES College of Technology",
+    "short_name": "IES College of Technology",
+    "city": "Bhopal",
+    "state": "Madhya Pradesh",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-052",
+    "name": "IIIT Kalyani",
+    "short_name": "IIIT Kalyani",
+    "city": "Kalyani",
+    "state": "West Bengal",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-126",
+    "name": "IIIT Sri City",
+    "short_name": "IIIT Sri City",
+    "city": "Sri City",
+    "state": "Andhra Pradesh",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-129",
+    "name": "IIT Guwahati",
+    "short_name": "IIT Guwahati",
+    "city": "Guwahati",
+    "state": "Assam",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-053",
+    "name": "IMS Engineering College",
+    "short_name": "IMS Engineering College",
+    "city": "Ghaziabad",
+    "state": "Uttar Pradesh",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-054",
+    "name": "Inderprastha Engineering College",
+    "short_name": "Inderprastha Engineering College",
+    "city": "Ghaziabad",
+    "state": "Uttar Pradesh",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-113",
+    "name": "Indian Institute of Technology (Banaras Hindu University), Varanasi",
+    "short_name": "Indian Institute of Technology (Ban...",
+    "city": "Varanasi",
+    "state": "Uttar Pradesh",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-123",
+    "name": "Indian Institute of Technology, Bhubaneswar",
+    "short_name": "Indian Institute of Technology, Bhu...",
+    "city": "Bhubaneswar",
+    "state": "Odisha",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-102",
+    "name": "Indian Institute of Technology, Bombay",
+    "short_name": "Indian Institute of Technology, Bom...",
+    "city": "Bombay",
+    "state": "Maharashtra",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-104",
+    "name": "Indian Institute of Technology, Delhi",
+    "short_name": "Indian Institute of Technology, Del...",
+    "city": "New Delhi",
+    "state": "Delhi",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-108",
+    "name": "Indian Institute of Technology, Gandhinagar",
+    "short_name": "Indian Institute of Technology, Gan...",
+    "city": "Ahmedabad",
+    "state": "Gujarat",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-107",
+    "name": "Indian Institute of Technology, Hyderabad",
+    "short_name": "Indian Institute of Technology, Hyd...",
+    "city": "Hyderabad",
+    "state": "Telangana",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-115",
+    "name": "Indian Institute of Technology, Indore",
+    "short_name": "Indian Institute of Technology, Ind...",
+    "city": "Indore",
+    "state": "Madhya Pradesh",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-122",
+    "name": "Indian Institute of Technology, Jodhpur",
+    "short_name": "Indian Institute of Technology, Jod...",
+    "city": "Jodhpur",
+    "state": "Rajasthan",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-105",
+    "name": "Indian Institute of Technology, Kanpur",
+    "short_name": "Indian Institute of Technology, Kan...",
+    "city": "Kanpur",
+    "state": "Uttar Pradesh",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-103",
+    "name": "Indian Institute of Technology, Kharagpur",
+    "short_name": "Indian Institute of Technology, Kha...",
+    "city": "Kharagpur",
+    "state": "West Bengal",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-101",
+    "name": "Indian Institute of Technology, Madras",
+    "short_name": "Indian Institute of Technology, Mad...",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-118",
+    "name": "Indian Institute of Technology, Mandi",
+    "short_name": "Indian Institute of Technology, Man...",
+    "city": "Mandi",
+    "state": "Himachal Pradesh",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-111",
+    "name": "Indian Institute of Technology, North Guwahati",
+    "short_name": "Indian Institute of Technology, Nor...",
+    "city": "Guwahati",
+    "state": "Assam",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-110",
+    "name": "Indian Institute of Technology, Patna",
+    "short_name": "Indian Institute of Technology, Pat...",
+    "city": "Patna",
+    "state": "Bihar",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-106",
+    "name": "Indian Institute of Technology, Roorkee",
+    "short_name": "Indian Institute of Technology, Roo...",
+    "city": "Roorkee",
+    "state": "Uttarakhand",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-109",
+    "name": "Indian Institute of Technology, Ropar-Rupnagar",
+    "short_name": "Indian Institute of Technology, Rop...",
+    "city": "Rupnagar",
+    "state": "Punjab",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-050",
+    "name": "I.T.S Engineering College",
+    "short_name": "I.T.S Engineering College",
+    "city": "Greater Noida",
+    "state": "Uttar Pradesh",
+    "type": "I",
+    "status": "active"
+  },
+  {
+    "id": "INST-127",
+    "name": "Jaypee University Anoopshahr",
+    "short_name": "Jaypee University Anoopshahr",
+    "city": "Anoopshahr",
+    "state": "Uttar Pradesh",
+    "type": "J",
+    "status": "active"
+  },
+  {
+    "id": "INST-055",
+    "name": "KCG College of Technology",
+    "short_name": "KCG College of Technology",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "type": "K",
+    "status": "active"
+  },
+  {
+    "id": "INST-056",
+    "name": "KIET Group of Institutions",
+    "short_name": "KIET Group of Institutions",
+    "city": "Ghaziabad",
+    "state": "Uttar Pradesh",
+    "type": "K",
+    "status": "active"
+  },
+  {
+    "id": "INST-057",
+    "name": "KLE Technological University",
+    "short_name": "KLE Technological University",
+    "city": "Dharwad",
+    "state": "Karnataka",
+    "type": "K",
+    "status": "active"
+  },
+  {
+    "id": "INST-058",
+    "name": "Kongu Engineering College",
+    "short_name": "Kongu Engineering College",
+    "city": "Perundurai",
+    "state": "Tamil Nadu",
+    "type": "K",
+    "status": "active"
+  },
+  {
+    "id": "INST-060",
+    "name": "Lakshmi Narain College of Technology",
+    "short_name": "Lakshmi Narain College of Technolog...",
+    "city": "Bhopal",
+    "state": "Madhya Pradesh",
+    "type": "L",
+    "status": "active"
+  },
+  {
+    "id": "INST-059",
+    "name": "L.D. College of Engineering, Ahmedabad",
+    "short_name": "L.D. College of Engineering, Ahmeda...",
+    "city": "Ahmedabad",
+    "state": "Gujarat",
+    "type": "L",
+    "status": "active"
+  },
+  {
+    "id": "INST-063",
+    "name": "Manipal Institute of Technology",
+    "short_name": "Manipal Institute of Technology",
+    "city": "Manipal",
+    "state": "Karnataka",
+    "type": "M",
+    "status": "active"
+  },
+  {
+    "id": "INST-062",
+    "name": "MCKV Institute of Engineering",
+    "short_name": "MCKV Institute of Engineering",
+    "city": "Howrah",
+    "state": "West Bengal",
+    "type": "M",
+    "status": "active"
+  },
+  {
+    "id": "INST-065",
+    "name": "Meerut Institute of Engineering & Technology",
+    "short_name": "Meerut Institute of Engineering & T...",
+    "city": "Meerut",
+    "state": "Uttar Pradesh",
+    "type": "M",
+    "status": "active"
+  },
+  {
+    "id": "INST-064",
+    "name": "Meghnad Saha Institute of Technology",
+    "short_name": "Meghnad Saha Institute of Technolog...",
+    "city": "Kolkata",
+    "state": "West Bengal",
+    "type": "M",
+    "status": "active"
+  },
+  {
+    "id": "INST-120",
+    "name": "Motilal Nehru National Institute of Technology",
+    "short_name": "Motilal Nehru National Institute of...",
+    "city": "Allahabad",
+    "state": "Uttar Pradesh",
+    "type": "M",
+    "status": "active"
+  },
+  {
+    "id": "INST-061",
+    "name": "M.S. Ramaiah Institute of Technology",
+    "short_name": "M.S. Ramaiah Institute of Technolog...",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "type": "M",
+    "status": "active"
+  },
+  {
+    "id": "INST-125",
+    "name": "National Institute of Technology, Calicut",
+    "short_name": "National Institute of Technology, C...",
+    "city": "Calicut",
+    "state": "Kerala",
+    "type": "N",
+    "status": "active"
+  },
+  {
+    "id": "INST-117",
+    "name": "National Institute of Technology, Rourkela",
+    "short_name": "National Institute of Technology, R...",
+    "city": "Rourkela",
+    "state": "Odisha",
+    "type": "N",
+    "status": "active"
+  },
+  {
+    "id": "INST-112",
+    "name": "National Institute of Technology, Tiruchirappalli",
+    "short_name": "National Institute of Technology, T...",
+    "city": "Tiruchirappalli",
+    "state": "Tamil Nadu",
+    "type": "N",
+    "status": "active"
+  },
+  {
+    "id": "INST-124",
+    "name": "National Institute of Technology, Warangal",
+    "short_name": "National Institute of Technology, W...",
+    "city": "Warangal",
+    "state": "Telangana",
+    "type": "N",
+    "status": "active"
+  },
+  {
+    "id": "INST-066",
+    "name": "Nitte Meenakshi Institute of Technology",
+    "short_name": "Nitte Meenakshi Institute of Techno...",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "type": "N",
+    "status": "active"
+  },
+  {
+    "id": "INST-067",
+    "name": "Noida Institute of Engineering & Technology",
+    "short_name": "Noida Institute of Engineering & Te...",
+    "city": "Greater Noida",
+    "state": "Uttar Pradesh",
+    "type": "N",
+    "status": "active"
+  },
+  {
+    "id": "INST-068",
+    "name": "Oriental College of Technology",
+    "short_name": "Oriental College of Technology",
+    "city": "Bhopal",
+    "state": "Madhya Pradesh",
+    "type": "O",
+    "status": "active"
+  },
+  {
+    "id": "INST-069",
+    "name": "Pimpri Chinchwad College of Engineering",
+    "short_name": "Pimpri Chinchwad College of Enginee...",
+    "city": "Pune",
+    "state": "Maharashtra",
+    "type": "P",
+    "status": "active"
+  },
+  {
+    "id": "INST-070",
+    "name": "Poornima College of Engineering, Jaipur",
+    "short_name": "Poornima College of Engineering, Ja...",
+    "city": "Jaipur",
+    "state": "Rajasthan",
+    "type": "P",
+    "status": "active"
+  },
+  {
+    "id": "INST-071",
+    "name": "Prasad V Potluri Siddhartha Institute of Technology",
+    "short_name": "Prasad V Potluri Siddhartha Institu...",
+    "city": "Vijayawada",
+    "state": "Andhra Pradesh",
+    "type": "P",
+    "status": "active"
+  },
+  {
+    "id": "INST-121",
+    "name": "PSG College of Technology",
+    "short_name": "PSG College of Technology",
+    "city": "Coimbatore",
+    "state": "Tamil Nadu",
+    "type": "P",
+    "status": "active"
+  },
+  {
+    "id": "INST-072",
+    "name": "Rajiv Gandhi Institute of Technology, Mumbai",
+    "short_name": "Rajiv Gandhi Institute of Technolog...",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "type": "R",
+    "status": "active"
+  },
+  {
+    "id": "INST-073",
+    "name": "R.V. College of Engineering",
+    "short_name": "R.V. College of Engineering",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "type": "R",
+    "status": "active"
+  },
+  {
+    "id": "INST-114",
+    "name": "Sardar Vallabhbhai National Institute of Technology",
+    "short_name": "Sardar Vallabhbhai National Institu...",
+    "city": "Surat",
+    "state": "Gujarat",
+    "type": "S",
+    "status": "active"
+  },
+  {
+    "id": "INST-074",
+    "name": "SCTR's Pune Institute of Computer Technology",
+    "short_name": "SCTR's Pune Institute of Computer T...",
+    "city": "Pune",
+    "state": "Maharashtra",
+    "type": "S",
+    "status": "active"
+  },
+  {
+    "id": "INST-075",
+    "name": "Siddaganga Institute of Technology",
+    "short_name": "Siddaganga Institute of Technology",
+    "city": "Tumkur",
+    "state": "Karnataka",
+    "type": "S",
+    "status": "active"
+  },
+  {
+    "id": "INST-076",
+    "name": "Siksha 'O' Anusandhan",
+    "short_name": "Siksha 'O' Anusandhan",
+    "city": "Bhubaneswar",
+    "state": "Odisha",
+    "type": "S",
+    "status": "active"
+  },
+  {
+    "id": "INST-077",
+    "name": "Siliguri Institute of Technology",
+    "short_name": "Siliguri Institute of Technology",
+    "city": "Siliguri",
+    "state": "West Bengal",
+    "type": "S",
+    "status": "active"
+  },
+  {
+    "id": "INST-078",
+    "name": "Sri Sivasubramaniya Nadar College of Engineering",
+    "short_name": "Sri Sivasubramaniya Nadar College o...",
+    "city": "Kalavakkam",
+    "state": "Tamil Nadu",
+    "type": "S",
+    "status": "active"
+  },
+  {
+    "id": "INST-079",
+    "name": "SRM Valliammai Engineering College",
+    "short_name": "SRM Valliammai Engineering College",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "type": "S",
+    "status": "active"
+  },
+  {
+    "id": "INST-080",
+    "name": "St. Thomas College of Engineering & Technology",
+    "short_name": "St. Thomas College of Engineering &...",
+    "city": "Kolkata",
+    "state": "West Bengal",
+    "type": "S",
+    "status": "active"
+  },
+  {
+    "id": "INST-082",
+    "name": "Thakur College of Engineering & Technology",
+    "short_name": "Thakur College of Engineering & Tec...",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "type": "T",
+    "status": "active"
+  },
+  {
+    "id": "INST-083",
+    "name": "Thapar Institute of Engineering and Technology",
+    "short_name": "Thapar Institute of Engineering and...",
+    "city": "Patiala",
+    "state": "Punjab",
+    "type": "T",
+    "status": "active"
+  },
+  {
+    "id": "INST-084",
+    "name": "TKM College of Engineering",
+    "short_name": "TKM College of Engineering",
+    "city": "Kollam",
+    "state": "Kerala",
+    "type": "T",
+    "status": "active"
+  },
+  {
+    "id": "INST-081",
+    "name": "T. K. M. Institute of Technology",
+    "short_name": "T. K. M. Institute of Technology",
+    "city": "Kollam",
+    "state": "Kerala",
+    "type": "T",
+    "status": "active"
+  },
+  {
+    "id": "INST-085",
+    "name": "Trident Academy of Technology",
+    "short_name": "Trident Academy of Technology",
+    "city": "Bhubaneswar",
+    "state": "Odisha",
+    "type": "T",
+    "status": "active"
+  },
+  {
+    "id": "INST-086",
+    "name": "Ujjain Engineering College",
+    "short_name": "Ujjain Engineering College",
+    "city": "Ujjain",
+    "state": "Madhya Pradesh",
+    "type": "U",
+    "status": "active"
+  },
+  {
+    "id": "INST-087",
+    "name": "University Visvesvaraya College of Engineering",
+    "short_name": "University Visvesvaraya College of ...",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "type": "U",
+    "status": "active"
+  },
+  {
+    "id": "INST-088",
+    "name": "UPES",
+    "short_name": "UPES",
+    "city": "Dehradun",
+    "state": "Uttarakhand",
+    "type": "U",
+    "status": "active"
+  },
+  {
+    "id": "INST-089",
+    "name": "Vallurupalli Nageswara Rao Vignana Jyothi Institute of Engineering and Technology",
+    "short_name": "Vallurupalli Nageswara Rao Vignana ...",
+    "city": "Hyderabad",
+    "state": "Telangana",
+    "type": "V",
+    "status": "active"
+  },
+  {
+    "id": "INST-090",
+    "name": "Vardhaman College of Engineering",
+    "short_name": "Vardhaman College of Engineering",
+    "city": "Rangareddy",
+    "state": "Telangana",
+    "type": "V",
+    "status": "active"
+  },
+  {
+    "id": "INST-091",
+    "name": "Vasavi College of Engineering",
+    "short_name": "Vasavi College of Engineering",
+    "city": "Hyderabad",
+    "state": "Telangana",
+    "type": "V",
+    "status": "active"
+  },
+  {
+    "id": "INST-094",
+    "name": "Veermata Jijabai Technological Institute",
+    "short_name": "Veermata Jijabai Technological Inst...",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "type": "V",
+    "status": "active"
+  },
+  {
+    "id": "INST-093",
+    "name": "Veer Surendra Sai University of Technology",
+    "short_name": "Veer Surendra Sai University of Tec...",
+    "city": "Sambalpur",
+    "state": "Odisha",
+    "type": "V",
+    "status": "active"
+  },
+  {
+    "id": "INST-092",
+    "name": "Vellore Institute of Technology",
+    "short_name": "Vellore Institute of Technology",
+    "city": "Vellore",
+    "state": "Tamil Nadu",
+    "type": "V",
+    "status": "active"
+  },
+  {
+    "id": "INST-095",
+    "name": "Vishwakarma Government Engineering College Chandkheda",
+    "short_name": "Vishwakarma Government Engineering ...",
+    "city": "Ahmedabad",
+    "state": "Gujarat",
+    "type": "V",
+    "status": "active"
+  },
+  {
+    "id": "INST-116",
+    "name": "Visvesvaraya National Institute of Technology, Nagpur",
+    "short_name": "Visvesvaraya National Institute of ...",
+    "city": "Nagpur",
+    "state": "Maharashtra",
+    "type": "V",
+    "status": "active"
+  },
+  {
+    "id": "INST-096",
+    "name": "Visvesvaraya Technological University",
+    "short_name": "Visvesvaraya Technological Universi...",
+    "city": "Belagavi",
+    "state": "Karnataka",
+    "type": "V",
+    "status": "active"
+  },
+  {
+    "id": "INST-097",
+    "name": "Walchand College of Engineering",
+    "short_name": "Walchand College of Engineering",
+    "city": "Sangli",
+    "state": "Maharashtra",
+    "type": "W",
+    "status": "active"
+  },
+  {
+    "id": "INST-098",
+    "name": "Xavier Institute of Engineering",
+    "short_name": "Xavier Institute of Engineering",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "type": "X",
+    "status": "active"
+  },
+  {
+    "id": "INST-099",
+    "name": "Yashoda Technical Campus, Faculty of Engineering",
+    "short_name": "Yashoda Technical Campus, Faculty o...",
+    "city": "Satara",
+    "state": "Maharashtra",
+    "type": "Y",
+    "status": "active"
+  },
+  {
+    "id": "INST-100",
+    "name": "Zakir Hussain College of Engineering & Technology",
+    "short_name": "Zakir Hussain College of Engineerin...",
+    "city": "Aligarh",
+    "state": "Uttar Pradesh",
+    "type": "Z",
+    "status": "active"
+  }
 ]

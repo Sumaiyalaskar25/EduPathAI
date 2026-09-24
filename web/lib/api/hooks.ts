@@ -6,11 +6,20 @@
  */
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueries, useQueryClient } from "@tanstack/react-query";
 import * as api from "./client";
-import type { VerifyRequest } from "./types";
+import type { VerifyRequest, CourseDetail } from "./types";
 
 /* ─────────── Auth ─────────── */
+
+export function useAuthOverview() {
+    return useQuery({
+        queryKey: ["auth", "overview"],
+        queryFn: () => api.getAuthOverview(),
+        staleTime: 30_000,
+        refetchInterval: 60_000,
+    });
+}
 
 export function useVerifyIdentity() {
     return useMutation({
@@ -120,6 +129,34 @@ export function useCourse(code: string | undefined) {
         queryFn: () => api.getCourse(code as string),
         enabled: !!code,
     });
+}
+
+/**
+ * Batch-fetches course details for a set of codes (e.g. every course
+ * referenced across a pathway's terms) and returns them as a code →
+ * CourseDetail map, so display components can do a pure lookup instead
+ * of fabricating title/credits/modality. Shares its cache with
+ * useCourse — opening a course tile from a pathway won't re-fetch it.
+ */
+export function useCourseCatalog(codes: string[]) {
+    const unique = Array.from(new Set(codes));
+    const results = useQueries({
+        queries: unique.map((code) => ({
+            queryKey: ["course", code],
+            queryFn: () => api.getCourse(code),
+        })),
+    });
+
+    const map = new Map<string, CourseDetail>();
+    results.forEach((r, i) => {
+        if (r.data) map.set(unique[i], r.data);
+    });
+
+    return {
+        data: map,
+        isLoading: results.some((r) => r.isLoading),
+        isError: results.some((r) => r.isError),
+    };
 }
 
 export function useBridge(bridgeId: string | undefined) {

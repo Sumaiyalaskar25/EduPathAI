@@ -1,13 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { PathwayKey, PathwayOption } from "@/lib/constants/demo-pathways";
+import type { PathwayMode } from "@/lib/api/types";
+import type { PathwayOption } from "@/lib/view-models/pathway";
 import { cn } from "@/lib/utils/cn";
 
 interface PathwayTabsProps {
   options: PathwayOption[];
-  selected: PathwayKey;
-  onSelect: (key: PathwayKey) => void;
+  selected: PathwayMode;
+  onSelect: (key: PathwayMode) => void;
 }
 
 export function PathwayTabs({ options, selected, onSelect }: PathwayTabsProps) {

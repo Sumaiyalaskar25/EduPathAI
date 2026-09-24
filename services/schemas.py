@@ -186,6 +186,7 @@ class Bridge:
     assessment_available: bool
     recognition_status: BridgeMode
     prerequisite_met: bool
+    title: str = ""                # resource catalog title; "" if unknown
 
 
 # ============================================================

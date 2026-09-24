@@ -26,6 +26,7 @@ import type {
   GovMobility,
   GovPolicyResponse,
   PolicyOverride,
+  AuthOverviewResponse,
 } from "./types";
 import { getCurrentSession } from "@/lib/store/session";
 
@@ -83,6 +84,10 @@ export function downloadBlob(blob: Blob, filename: string) {
 }
 
 /* ─────────── Auth ─────────── */
+
+export async function getAuthOverview(): Promise<AuthOverviewResponse> {
+  return request<AuthOverviewResponse>("/v1/auth/overview");
+}
 
 export async function verifyIdentity(req: VerifyRequest): Promise<VerifyResponse> {
   return request<VerifyResponse>("/v1/auth/verify", {

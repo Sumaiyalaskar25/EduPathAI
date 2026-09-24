@@ -1,7 +1,7 @@
 "use client";
 
 import { Clock } from "lucide-react";
-import type { SummerBridge } from "@/lib/constants/demo-pathways";
+import type { SummerBridge } from "@/lib/view-models/pathway";
 
 interface SummerBridgeCardProps {
   bridge: SummerBridge;

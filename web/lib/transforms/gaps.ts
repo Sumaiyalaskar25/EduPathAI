@@ -6,7 +6,7 @@
  * ────────────────────────────────────────────────────────────────
  */
 import type { MatchResult, Gap, Bridge } from "@/lib/api/types";
-import type { OutcomeRow, BridgeCourse } from "@/lib/constants/demo-gaps";
+import type { OutcomeRow, BridgeCourse } from "@/lib/view-models/gaps";
 import type { RadarAxisPoint } from "@/components/gaps/BloomRadar";
 
 export function matchesAndGapsToOutcomeRows(matches: MatchResult[], gaps: Gap[]): OutcomeRow[] {
@@ -70,11 +70,8 @@ export function matchesToRadar(matches: MatchResult[]): RadarAxisPoint[] {
 export function bridgesToCourseCards(bridges: Bridge[]): BridgeCourse[] {
     return bridges.map((b) => ({
         id: b.bridge_id,
-        provider: (["NPTEL", "SWAYAM", "V-Lab"].includes(b.resource_provider) ? b.resource_provider : "NPTEL") as
-            | "NPTEL"
-            | "SWAYAM"
-            | "V-Lab",
-        title: b.resource_id,
+        provider: b.resource_provider,
+        title: b.title || b.resource_id,
         durationHours: b.duration_hours,
         coverage: `${Math.round(b.competency_coverage * 100)}% Outcome Coverage`,
         tags: [

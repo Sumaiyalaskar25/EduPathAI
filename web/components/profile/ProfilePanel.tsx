@@ -141,6 +141,12 @@ function IdentityCard({ identity }: { identity: StudentProfile["identity"] }) {
                 Aadhaar e-Sign verified
               </span>
             )}
+            {I.verification_mode === "DEVELOPMENT" && (
+              <span className="pill" title="Signed in against the seeded identity directory, not a live DigiLocker/Aadhaar connection.">
+                <FileText className="h-3.5 w-3.5 text-amber-600" />
+                Development identity environment
+              </span>
+            )}
           </div>
         </div>
 

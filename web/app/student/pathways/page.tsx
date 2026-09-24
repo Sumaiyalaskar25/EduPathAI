@@ -8,18 +8,19 @@ import { SemesterColumn } from "@/components/pathways/SemesterColumn";
 import { SummerBridgeCard } from "@/components/pathways/SummerBridgeCard";
 import { CurriculumBadge } from "@/components/pathways/CurriculumBadge";
 import { RecognizedBadge } from "@/components/pathways/RecognizedBadge";
-import { DEMO_PATHWAYS, type PathwayKey } from "@/lib/constants/demo-pathways";
-import { CheckCircle2, Loader2 } from "lucide-react";
 import { useRequireRole } from "@/lib/hooks/useRequireRole";
-import { useRunPathway, useSubmitPathway } from "@/lib/api/hooks";
-import { pathwayToView } from "@/lib/transforms/pathway";
+import { useRunPathway, useSubmitPathway, useCourseCatalog } from "@/lib/api/hooks";
+import { pathwayToView, pathwaysToOptions } from "@/lib/transforms/pathway";
+import { toRecognitionView } from "@/lib/transforms/recognition";
+import type { PathwayMode } from "@/lib/api/types";
+import { CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 export default function PathwaySolverPage() {
   const session = useRequireRole("learner");
   const router = useRouter();
-  const [selected, setSelected] = useState<PathwayKey>("BALANCED");
+  const [selected, setSelected] = useState<PathwayMode>("BALANCED");
   const runPathway = useRunPathway();
   const submitPathway = useSubmitPathway();
 
@@ -39,24 +40,21 @@ export default function PathwaySolverPage() {
     [runPathway.data, selected]
   );
 
+  const courseCodes = useMemo(
+    () => activePathway?.terms_plan.flatMap((t) => t.courses) ?? [],
+    [activePathway]
+  );
+  const courseCatalog = useCourseCatalog(courseCodes);
+
   const view = useMemo(() => {
     if (!activePathway || !runPathway.data) return null;
-    return pathwayToView(activePathway, runPathway.data.matches ?? [], runPathway.data.bridges ?? []);
-  }, [activePathway, runPathway.data]);
+    return pathwayToView(activePathway, runPathway.data.matches ?? [], runPathway.data.bridges ?? [], courseCatalog.data);
+  }, [activePathway, runPathway.data, courseCatalog.data]);
 
-  const availableModes = new Set(runPathway.data?.pathways.map((p) => p.mode) ?? []);
-  const options = DEMO_PATHWAYS.filter((o) => availableModes.size === 0 || availableModes.has(o.key));
+  const options = useMemo(() => pathwaysToOptions(runPathway.data?.pathways ?? []), [runPathway.data]);
 
-  const total = runPathway.data
-    ? runPathway.data.recognition.direct +
-    runPathway.data.recognition.bridge +
-    runPathway.data.recognition.missing +
-    runPathway.data.recognition.review +
-    runPathway.data.recognition.policy_conflict
-    : 0;
-  const percent = total
-    ? Math.round(((runPathway.data!.recognition.direct + runPathway.data!.recognition.bridge) / total) * 100)
-    : 0;
+  const recognitionView = toRecognitionView(runPathway.data?.recognition);
+  const percent = recognitionView.recognizedPercent;
 
   if (!session) return null;
 
@@ -67,7 +65,7 @@ export default function PathwaySolverPage() {
         <span className="text-text-muted">·</span>
         <span>{session.programme}</span>
       </span>
-      <CurriculumBadge institution={session.targetInstitution ?? "—"} version="v2026.1" />
+      <CurriculumBadge institution={session.targetInstitution ?? "—"} version={runPathway.data?.bundle.curriculum_version ?? "—"} />
       <RecognizedBadge percent={percent} />
     </>
   );

@@ -22,7 +22,6 @@ import {
 import { AppShell } from "@/components/layout/AppShell";
 import { BottomStrip } from "@/components/layout/BottomStrip";
 import { CodePanel } from "@/components/ledger/CodePanel";
-import { DEMO_CHAIN, DEMO_STUDENT } from "@/lib/constants/demo";
 import { cn } from "@/lib/utils/cn";
 import { useRequireRole } from "@/lib/hooks/useRequireRole";
 import { useAudit, useContestDecision, useReplayDecision } from "@/lib/api/hooks";
@@ -394,12 +393,14 @@ export default function AuditReplayPage() {
     <>
       <span className="pill hidden lg:inline-flex">
         <span className="font-semibold text-text-primary">
-          {session?.externalRef ?? DEMO_STUDENT.apaar}
+          {session?.externalRef}
         </span>
         <span className="text-text-muted">·</span>
-        <span>{session?.programme ?? DEMO_STUDENT.programme}</span>
+        <span>{session?.programme}</span>
       </span>
-      <span className="pill hidden md:inline-flex">Chain ID: {audit.data?.chain_id ?? DEMO_CHAIN.id}</span>
+      {audit.data?.chain_id && (
+        <span className="pill hidden md:inline-flex">Chain ID: {audit.data.chain_id}</span>
+      )}
       <span className="relative inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-50 to-emerald-100 px-3.5 py-2 text-[11px] font-semibold text-emerald-800 shadow-sm">
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />

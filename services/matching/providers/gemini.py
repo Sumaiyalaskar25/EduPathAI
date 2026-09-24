@@ -23,7 +23,7 @@ from services.matching.providers.base import (
 )
 
 
-DEFAULT_GEMINI_MODEL = "gemini-2.0-flash"
+DEFAULT_GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
 
 
 class GeminiProvider:

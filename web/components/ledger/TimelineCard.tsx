@@ -8,7 +8,7 @@ import {
   User,
   MoreVertical,
 } from "lucide-react";
-import type { LedgerEvent } from "@/lib/constants/demo-ledger";
+import type { LedgerEvent } from "@/lib/view-models/ledger";
 import { cn } from "@/lib/utils/cn";
 
 interface TimelineCardProps {

@@ -121,6 +121,7 @@ class Orchestrator:
                     assessment_available=resource.assessment_available,
                     recognition_status=BridgeMode(resource.recognition_status),
                     prerequisite_met=True,
+                    title=resource.title,
                 ))
 
         # 7. Solve

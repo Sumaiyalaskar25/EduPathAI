@@ -20,6 +20,7 @@ from threading import Lock
 
 # USD per 1,000,000 tokens
 PRICING: dict[str, dict[str, float]] = {
+    "gemini-3.8-flash":      {"input": 0.10, "output": 0.40},
     "gemini-2.0-flash":      {"input": 0.10, "output": 0.40},
     "gemini-1.5-flash":      {"input": 0.075, "output": 0.30},
     "gpt-4o-mini":           {"input": 0.15, "output": 0.60},

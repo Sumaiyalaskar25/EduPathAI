@@ -80,6 +80,8 @@ export interface Bridge {
   assessment_available: boolean;
   recognition_status: BridgeMode;
   prerequisite_met: boolean;
+  /** Resource-catalog title; "" when the resource isn't in the catalog. */
+  title: string;
 }
 
 /* ─────────── Pathways ─────────── */
@@ -208,6 +210,49 @@ export interface VerifyResponse {
   target_programme: string | null;
 }
 
+export interface AuthPersonaLearner {
+  id: string;
+  name: string;
+  apaar: string;
+  raw_id: string;
+  source: string;
+  target: string;
+  programme: string;
+}
+
+export interface AuthPersonaReviewer {
+  id: string;
+  name: string;
+  raw_id: string;
+  institution: string;
+  role: string;
+}
+
+export interface AuthPersonaOfficer {
+  id: string;
+  name: string;
+  raw_id: string;
+  department: string;
+  role: string;
+}
+
+export interface AuthOverviewResponse {
+  stats: {
+    institutions: number;
+    courses: number;
+    disciplines: number;
+    curricula: number;
+    competencies: number;
+    ledgerHead: string;
+    db: string;
+  };
+  personas: {
+    learner: AuthPersonaLearner[];
+    bos: AuthPersonaReviewer[];
+    ministry: AuthPersonaOfficer[];
+  };
+}
+
 /* ─────────── Student profile ─────────── */
 
 export interface ConsentEntry {
@@ -238,6 +283,7 @@ export interface StudentProfile {
     enrolled_on: string;
     digilocker_linked: boolean;
     biometric_verified: boolean;
+    verification_mode: "DEVELOPMENT" | "PRODUCTION";
   };
   consents: ConsentEntry[];
   decisions: DecisionHistoryItem[];
@@ -272,6 +318,12 @@ export interface BridgeDetail {
   recognition_status: BridgeMode;
   prerequisite_met: boolean;
   enrolled: boolean;
+  /** Catalog fields joined in from the resource registry. `title` falls
+   *  back to resource_id server-side if the catalog entry is missing. */
+  title: string;
+  competencies: string[];
+  prerequisites: string[];
+  valid_until: string | null;
   gap: { gap_type: GapType; description: string; missing_outcomes: string[] } | null;
 }
 

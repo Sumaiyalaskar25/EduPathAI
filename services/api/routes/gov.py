@@ -42,7 +42,8 @@ async def gov_aggregate(state: AppState = Depends(get_state)):
     recognized = (await state.db.fetchrow(
         "SELECT COUNT(*) AS n FROM recognition_decisions WHERE status IN ('DIRECT','BRIDGE')"))["n"]
     total_rows = (await state.db.fetchrow("SELECT COUNT(*) AS n FROM recognition_decisions"))["n"]
-    heis_integrated = len(json.loads(_INSTITUTIONS_PATH.read_text(encoding="utf-8"))) if _INSTITUTIONS_PATH.exists() else 0
+    hei_row = await state.db.fetchrow("SELECT COUNT(*) AS n FROM institutions")
+    heis_integrated = hei_row["n"] if (hei_row and hei_row["n"] > 0) else (len(json.loads(_INSTITUTIONS_PATH.read_text(encoding="utf-8"))) if _INSTITUTIONS_PATH.exists() else 0)
 
     stats = {
         "totalStudents": total_students,

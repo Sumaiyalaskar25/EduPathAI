@@ -11,18 +11,8 @@ import {
   ShieldAlert,
   Activity,
   Target,
-  Zap,
 } from "lucide-react";
-import {
-  DEMO_GOV_STATS,
-  DEMO_MOBILITY_FLOWS,
-  DEMO_FRICTION_COURSES,
-  DEMO_MOBILITY_TREND,
-  DEMO_REGION_SIGNALS,
-  DEMO_POLICY_SIGNALS,
-  DEMO_LATENCY_STATS,
-  type PolicySignal,
-} from "@/lib/constants/demo-gov";
+import type { MobilityFlow, FrictionCourse, TrendPoint, RegionSignal, PolicySignal } from "@/lib/api/types";
 import { cn } from "@/lib/utils/cn";
 
 /* ───── number formatting ───── */
@@ -86,7 +76,7 @@ function HeroStats({ stats }: { stats: { totalStudents: number; heisIntegrated: 
 
 /* ───── 2. MOBILITY FLOWS ───── */
 
-function MobilityFlows({ flows = DEMO_MOBILITY_FLOWS }: { flows?: typeof DEMO_MOBILITY_FLOWS }) {
+function MobilityFlows({ flows }: { flows: MobilityFlow[] }) {
   return (
     <motion.section
       initial={{ opacity: 0, y: 8 }}
@@ -166,7 +156,7 @@ function MobilityFlows({ flows = DEMO_MOBILITY_FLOWS }: { flows?: typeof DEMO_MO
 
 /* ───── 3. FRICTION HEATMAP ───── */
 
-function FrictionHeatmap({ frictionCourses = DEMO_FRICTION_COURSES }: { frictionCourses?: typeof DEMO_FRICTION_COURSES }) {
+function FrictionHeatmap({ frictionCourses }: { frictionCourses: FrictionCourse[] }) {
   return (
     <motion.section
       initial={{ opacity: 0, y: 8 }}
@@ -238,7 +228,7 @@ function FrictionHeatmap({ frictionCourses = DEMO_FRICTION_COURSES }: { friction
 
 /* ───── 4. TREND ───── */
 
-function MobilityTrend({ trend = DEMO_MOBILITY_TREND }: { trend?: typeof DEMO_MOBILITY_TREND }) {
+function MobilityTrend({ trend }: { trend: TrendPoint[] }) {
   const max = Math.max(...trend.map((t) => t.decisions), 1);
   const first = trend[0]?.decisions ?? 0;
   const last = trend[trend.length - 1]?.decisions ?? 0;
@@ -305,7 +295,7 @@ function MobilityTrend({ trend = DEMO_MOBILITY_TREND }: { trend?: typeof DEMO_MO
 
 /* ───── 5. REGION SIGNALS ───── */
 
-function RegionSignals({ regionSignals = DEMO_REGION_SIGNALS }: { regionSignals?: typeof DEMO_REGION_SIGNALS }) {
+function RegionSignals({ regionSignals }: { regionSignals: RegionSignal[] }) {
   const max = Math.max(...regionSignals.map((r) => r.students), 1);
 
   return (
@@ -399,7 +389,7 @@ const SEVERITY_MAP: Record<
   },
 };
 
-function PolicySignals({ policySignals = DEMO_POLICY_SIGNALS }: { policySignals?: typeof DEMO_POLICY_SIGNALS }) {
+function PolicySignals({ policySignals }: { policySignals: PolicySignal[] }) {
   return (
     <motion.section
       initial={{ opacity: 0, y: 8 }}
@@ -474,23 +464,6 @@ function PolicySignals({ policySignals = DEMO_POLICY_SIGNALS }: { policySignals?
 /* ───── 7. SYSTEM HEALTH ───── */
 
 function SystemHealth() {
-  const rows = [
-    { label: "API p50", value: DEMO_LATENCY_STATS.apiP50, tone: "emerald" },
-    { label: "API p95", value: DEMO_LATENCY_STATS.apiP95, tone: "emerald" },
-    { label: "Solver p50", value: DEMO_LATENCY_STATS.solverP50, tone: "emerald" },
-    { label: "Solver p95", value: DEMO_LATENCY_STATS.solverP95, tone: "amber" },
-    { label: "Solver p99", value: DEMO_LATENCY_STATS.solverP99, tone: "rose" },
-    { label: "LLM p50", value: DEMO_LATENCY_STATS.llmP50, tone: "emerald" },
-    { label: "LLM p95", value: DEMO_LATENCY_STATS.llmP95, tone: "amber" },
-    { label: "Cache hit", value: pct(DEMO_LATENCY_STATS.cacheHitRate), tone: "emerald" },
-  ] as const;
-
-  const toneMap = {
-    emerald: "text-emerald-700",
-    amber: "text-amber-700",
-    rose: "text-rose-700",
-  };
-
   return (
     <motion.section
       initial={{ opacity: 0, y: 8 }}
@@ -499,45 +472,26 @@ function SystemHealth() {
       className="card-warm rounded-3xl p-7"
     >
       <header className="flex items-center gap-2.5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100">
-          <Activity className="h-4 w-4 text-emerald-700" />
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100">
+          <Activity className="h-4 w-4 text-slate-600" />
         </span>
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-text-muted">
             Platform Health
           </p>
           <h2 className="font-display text-[17px] font-bold tracking-tight text-text-primary">
-            Live latency & cache
+            Latency & cache
           </h2>
         </div>
       </header>
 
-      <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3">
-        {rows.map((r) => (
-          <div
-            key={r.label}
-            className="flex items-center justify-between border-b border-border-subtle/50 pb-2.5 last:border-0"
-          >
-            <dt className="text-[12px] font-medium text-text-secondary">
-              {r.label}
-            </dt>
-            <dd
-              className={cn(
-                "font-mono text-[12.5px] font-semibold tabular-nums",
-                toneMap[r.tone]
-              )}
-            >
-              {r.value}
-            </dd>
-          </div>
-        ))}
-      </dl>
-
-      <div className="mt-6 flex items-center gap-2 rounded-2xl bg-emerald-50/60 p-4">
-        <Zap className="h-4 w-4 text-emerald-700" />
-        <p className="text-[12px] font-medium text-emerald-900">
-          All systems nominal ·{" "}
-          <span className="font-semibold">100% chain integrity</span>
+      <div className="mt-6 flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border-subtle py-10 text-center">
+        <p className="text-[13px] font-medium text-text-secondary">
+          Data not currently available
+        </p>
+        <p className="max-w-[260px] text-[11.5px] leading-snug text-text-muted">
+          This platform doesn't have an observability/telemetry backend wired
+          up yet, so there's no real latency or cache-hit data to show here.
         </p>
       </div>
     </motion.section>

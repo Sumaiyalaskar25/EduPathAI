@@ -18,14 +18,11 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { BottomStrip } from "@/components/layout/BottomStrip";
+import { TableSkeleton } from "@/components/feedback/Skeleton";
 import { HEI_NAV } from "@/components/layout/Sidebar";
-import {
-  DEMO_HEI_INSTITUTIONS,
-  DEMO_HEI_INSTITUTION_STATS,
-  type HeiInstitution,
-  type HeiInstitutionStatus,
-} from "@/lib/constants/demo-hei-institutions";
-import { DEMO_CHAIN } from "@/lib/constants/demo";
+import { useRequireRole } from "@/lib/hooks/useRequireRole";
+import { useHeiInstitutions } from "@/lib/api/hooks";
+import type { HeiInstitution } from "@/lib/api/types";
 import { cn } from "@/lib/utils/cn";
 
 /* ───── helpers ───── */
@@ -41,12 +38,12 @@ function formatNum(n: number): string {
 
 /* ───── 1. STATS ───── */
 
-function StatsBar() {
+function StatsBar({ stats }: { stats: { total: number; active: number; pending: number; totalDecisionsThisMonth: number } }) {
   const items = [
-    { label: "Total institutions", value: DEMO_HEI_INSTITUTION_STATS.total, tone: "navy" },
-    { label: "Active partner HEIs", value: DEMO_HEI_INSTITUTION_STATS.active, tone: "emerald" },
-    { label: "Pending review", value: DEMO_HEI_INSTITUTION_STATS.pending, tone: "amber" },
-    { label: "Median recognition", value: pct(DEMO_HEI_INSTITUTION_STATS.medianRecognition), tone: "emerald", isText: true },
+    { label: "Total institutions", value: stats.total, tone: "navy" },
+    { label: "Active partner HEIs", value: stats.active, tone: "emerald" },
+    { label: "Pending review", value: stats.pending, tone: "amber" },
+    { label: "Decisions this month", value: stats.totalDecisionsThisMonth, tone: "emerald" },
   ] as const;
 
   const toneMap = {
@@ -68,14 +65,8 @@ function StatsBar() {
           <p className="text-[10.5px] font-bold uppercase tracking-wider text-text-muted">
             {s.label}
           </p>
-          <p
-            className={cn(
-              "mt-3 font-display font-bold leading-none tracking-tight tabular-nums",
-              "isText" in s && s.isText ? "text-[22px]" : "text-[30px]",
-              toneMap[s.tone]
-            )}
-          >
-            {s.value}
+          <p className={cn("mt-3 font-display text-[30px] font-bold leading-none tracking-tight tabular-nums", toneMap[s.tone])}>
+            {s.value.toLocaleString("en-IN")}
           </p>
         </motion.div>
       ))}
@@ -86,7 +77,7 @@ function StatsBar() {
 /* ───── 2. STATUS CHIP ───── */
 
 const STATUS_MAP: Record<
-    HeiInstitutionStatus,
+  HeiInstitution["status"],
   { bg: string; fg: string; Icon: typeof CheckCircle2; label: string }
 > = {
   active: { bg: "bg-emerald-100", fg: "text-emerald-800", Icon: CheckCircle2, label: "Active" },
@@ -94,7 +85,7 @@ const STATUS_MAP: Record<
   paused: { bg: "bg-slate-100", fg: "text-slate-700", Icon: PauseCircle, label: "Paused" },
 };
 
-const TYPE_COLORS: Record<HeiInstitution["type"], string> = {
+const TYPE_COLORS: Record<string, string> = {
   IIT: "bg-[rgb(26_42_82)] text-white",
   NIT: "bg-[rgb(26_42_82)]/90 text-white",
   Central: "bg-[rgb(26_42_82)]/80 text-white",
@@ -102,16 +93,11 @@ const TYPE_COLORS: Record<HeiInstitution["type"], string> = {
   Private: "bg-amber-100 text-amber-900",
   Deemed: "bg-sky-100 text-sky-800",
 };
+const DEFAULT_TYPE_COLOR = "bg-slate-100 text-slate-700";
 
 /* ───── 3. CARD ───── */
 
-function InstitutionCard({
-  inst,
-  index,
-}: {
-  inst: HeiInstitution;
-  index: number;
-}) {
+function InstitutionCard({ inst, index }: { inst: HeiInstitution; index: number }) {
   const s = STATUS_MAP[inst.status];
   const StatusIcon = s.Icon;
 
@@ -154,7 +140,7 @@ function InstitutionCard({
 
       {/* Meta row */}
       <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-medium text-text-muted">
-        <span className={cn("rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider", TYPE_COLORS[inst.type])}>
+        <span className={cn("rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider", TYPE_COLORS[inst.type] ?? DEFAULT_TYPE_COLOR)}>
           {inst.type}
         </span>
         <span className="inline-flex items-center gap-1">
@@ -187,11 +173,7 @@ function InstitutionCard({
           <dd
             className={cn(
               "mt-1 font-mono text-[15px] font-bold tabular-nums",
-              inst.recognitionRate >= 0.8
-                ? "text-emerald-700"
-                : inst.recognitionRate >= 0.7
-                ? "text-amber-700"
-                : "text-rose-700"
+              inst.recognitionRate >= 0.8 ? "text-emerald-700" : inst.recognitionRate >= 0.7 ? "text-amber-700" : "text-rose-700"
             )}
           >
             {pct(inst.recognitionRate)}
@@ -223,11 +205,7 @@ function InstitutionCard({
             transition={{ delay: 0.2 + index * 0.03, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className={cn(
               "h-full rounded-full",
-              inst.recognitionRate >= 0.8
-                ? "bg-emerald-500"
-                : inst.recognitionRate >= 0.7
-                ? "bg-amber-500"
-                : "bg-rose-500"
+              inst.recognitionRate >= 0.8 ? "bg-emerald-500" : inst.recognitionRate >= 0.7 ? "bg-amber-500" : "bg-rose-500"
             )}
           />
         </div>
@@ -244,29 +222,22 @@ function InstitutionCard({
 
 /* ───── 4. FILTERS ───── */
 
-type FilterKey = "ALL" | "IIT" | "NIT" | "State" | "Deemed" | "Pending";
-
-const FILTERS: { key: FilterKey; label: string }[] = [
-  { key: "ALL", label: "All" },
-  { key: "IIT", label: "IITs" },
-  { key: "NIT", label: "NITs" },
-  { key: "State", label: "State" },
-  { key: "Deemed", label: "Deemed" },
-  { key: "Pending", label: "Pending" },
-];
-
 function FilterTabs({
   active,
   onChange,
+  types,
   counts,
 }: {
-  active: FilterKey;
-  onChange: (k: FilterKey) => void;
-  counts: Record<FilterKey, number>;
+  active: string;
+  onChange: (k: string) => void;
+  types: string[];
+  counts: Record<string, number>;
 }) {
+  const filters = [{ key: "ALL", label: "All" }, ...types.map((t) => ({ key: t, label: t })), { key: "Pending", label: "Pending" }];
+
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {FILTERS.map((f) => {
+      {filters.map((f) => {
         const isActive = active === f.key;
         return (
           <button
@@ -280,13 +251,8 @@ function FilterTabs({
             )}
           >
             <span>{f.label}</span>
-            <span
-              className={cn(
-                "rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums",
-                isActive ? "bg-white/20 text-white" : "bg-canvas text-text-muted"
-              )}
-            >
-              {counts[f.key]}
+            <span className={cn("rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums", isActive ? "bg-white/20 text-white" : "bg-canvas text-text-muted")}>
+              {counts[f.key] ?? 0}
             </span>
           </button>
         );
@@ -298,50 +264,42 @@ function FilterTabs({
 /* ───── MAIN ───── */
 
 export default function HEIInstitutionsPage() {
-  const [filter, setFilter] = useState<FilterKey>("ALL");
+  const session = useRequireRole("bos");
+  const institutions = useHeiInstitutions();
+  const [filter, setFilter] = useState<string>("ALL");
   const [query, setQuery] = useState("");
 
-  const counts = useMemo(
-    () => ({
-      ALL: DEMO_HEI_INSTITUTIONS.length,
-      IIT: DEMO_HEI_INSTITUTIONS.filter((i) => i.type === "IIT").length,
-      NIT: DEMO_HEI_INSTITUTIONS.filter((i) => i.type === "NIT").length,
-      State: DEMO_HEI_INSTITUTIONS.filter((i) => i.type === "State").length,
-      Deemed: DEMO_HEI_INSTITUTIONS.filter((i) => i.type === "Deemed").length,
-      Pending: DEMO_HEI_INSTITUTIONS.filter((i) => i.status === "pending").length,
-    }),
-    []
-  );
+  const items = institutions.data?.items ?? [];
+  const types = useMemo(() => Array.from(new Set(items.map((i) => i.type))).sort(), [items]);
+
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { ALL: items.length, Pending: items.filter((i) => i.status === "pending").length };
+    for (const t of types) c[t] = items.filter((i) => i.type === t).length;
+    return c;
+  }, [items, types]);
 
   const visible = useMemo(() => {
-    let list = DEMO_HEI_INSTITUTIONS;
+    let list = items;
     if (filter === "Pending") list = list.filter((i) => i.status === "pending");
     else if (filter !== "ALL") list = list.filter((i) => i.type === filter);
 
     if (query.trim()) {
       const q = query.toLowerCase();
       list = list.filter(
-        (i) =>
-          i.name.toLowerCase().includes(q) ||
-          i.shortName.toLowerCase().includes(q) ||
-          i.state.toLowerCase().includes(q) ||
-          i.city.toLowerCase().includes(q)
+        (i) => i.name.toLowerCase().includes(q) || i.shortName.toLowerCase().includes(q) || i.state.toLowerCase().includes(q) || i.city.toLowerCase().includes(q)
       );
     }
     return list;
-  }, [filter, query]);
+  }, [items, filter, query]);
+
+  if (!session) return null;
 
   const topBarRight = (
     <>
       <span className="pill hidden lg:inline-flex">
-        <span className="font-semibold text-text-primary">
-          BoS Reviewer · IIT Bombay
-        </span>
+        <span className="font-semibold text-text-primary">BoS Reviewer · {session.institution}</span>
         <span className="text-text-muted">·</span>
-        <span>Prof. S. Sen</span>
-      </span>
-      <span className="pill hidden md:inline-flex">
-        Chain ID: {DEMO_CHAIN.id}
+        <span>{session.displayName}</span>
       </span>
       <span className="relative inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-50 to-emerald-100 px-3.5 py-2 text-[11px] font-semibold text-emerald-800 shadow-sm">
         <span className="relative flex h-2 w-2">
@@ -349,20 +307,13 @@ export default function HEIInstitutionsPage() {
           <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
         </span>
         <ShieldCheck className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">Chain Integrity:</span>
-        <span>{DEMO_CHAIN.integrity}</span>
+        <span>{institutions.data?.stats.active ?? 0} active partners</span>
       </span>
     </>
   );
 
   return (
-    <AppShell
-      title="Partner Institutions"
-      subtitle="Directory of HEIs integrated with EduPathAI"
-      topBarRight={topBarRight}
-      nav={HEI_NAV}
-      reserveBottom
-    >
+    <AppShell title="Partner Institutions" subtitle="Directory of HEIs integrated with EduPathAI" topBarRight={topBarRight} nav={HEI_NAV} reserveBottom>
       <section className="mx-auto max-w-[1400px] px-4 pb-4 pt-4 md:px-6">
         <motion.header
           initial={{ opacity: 0, y: 8 }}
@@ -388,60 +339,79 @@ export default function HEIInstitutionsPage() {
           </p>
         </motion.header>
 
-        <div className="space-y-5">
-          <StatsBar />
-
-          {/* Search + filters */}
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <FilterTabs active={filter} onChange={setFilter} counts={counts} />
-
-            <div className="relative w-full lg:w-72">
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
-              <input
-                type="text"
-                placeholder="Search by name, city, or state…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="w-full rounded-full border border-border-subtle bg-white/70 py-2.5 pl-9 pr-4 text-[13px] font-medium text-text-primary outline-none transition-colors placeholder:text-text-muted/70 focus:border-[rgb(26_42_82)]/40 focus:bg-white"
-              />
-            </div>
+        {institutions.isLoading ? (
+          <div className="space-y-5">
+            <TableSkeleton rows={3} />
           </div>
+        ) : institutions.isError ? (
+          <div className="card-warm rounded-3xl p-8 text-center">
+            <p className="text-[14px] font-semibold text-text-primary">We couldn't load the institution directory.</p>
+            <p className="mt-2 text-[12.5px] text-text-secondary">
+              {institutions.error instanceof Error ? institutions.error.message : "Try refreshing the page."}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {institutions.data && <StatsBar stats={institutions.data.stats} />}
 
-          {/* Results */}
-          {visible.length === 0 ? (
-            <div className="card-warm flex flex-col items-center justify-center gap-2 py-16 text-center">
-              <Search className="h-6 w-6 text-text-muted" />
-              <p className="text-[14px] font-semibold text-text-primary">
-                No institutions match this filter
-              </p>
-              <p className="text-[12px] text-text-secondary">
-                Try a different category or clear the search.
-              </p>
-              <button
-                onClick={() => {
-                  setFilter("ALL");
-                  setQuery("");
-                }}
-                className="mt-2 text-[12px] font-semibold text-emerald-700 hover:underline"
-              >
-                Reset filters
-              </button>
+            {/* Search + filters */}
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <FilterTabs active={filter} onChange={setFilter} types={types} counts={counts} />
+
+              <div className="relative w-full lg:w-72">
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+                <input
+                  type="text"
+                  placeholder="Search by name, city, or state…"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="w-full rounded-full border border-border-subtle bg-white/70 py-2.5 pl-9 pr-4 text-[13px] font-medium text-text-primary outline-none transition-colors placeholder:text-text-muted/70 focus:border-[rgb(26_42_82)]/40 focus:bg-white"
+                />
+              </div>
             </div>
-          ) : (
-            <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <AnimatePresence initial={false}>
-                {visible.map((inst, i) => (
-                  <InstitutionCard key={inst.id} inst={inst} index={i} />
-                ))}
-              </AnimatePresence>
-            </ul>
-          )}
-        </div>
+
+            {/* Results */}
+            {visible.length === 0 ? (
+              <div className="card-warm flex flex-col items-center justify-center gap-2 py-16 text-center">
+                <Search className="h-6 w-6 text-text-muted" />
+                <p className="text-[14px] font-semibold text-text-primary">
+                  {items.length === 0 ? "No institutions in the network yet" : "No institutions match this filter"}
+                </p>
+                <p className="text-[12px] text-text-secondary">
+                  {items.length === 0 ? "Institutions appear here once onboarded." : "Try a different category or clear the search."}
+                </p>
+                {items.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setFilter("ALL");
+                      setQuery("");
+                    }}
+                    className="mt-2 text-[12px] font-semibold text-emerald-700 hover:underline"
+                  >
+                    Reset filters
+                  </button>
+                )}
+              </div>
+            ) : (
+              <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <AnimatePresence initial={false}>
+                  {visible.map((inst, i) => (
+                    <InstitutionCard key={inst.id} inst={inst} index={i} />
+                  ))}
+                </AnimatePresence>
+              </ul>
+            )}
+          </div>
+        )}
       </section>
 
       <BottomStrip
         label={"Network\nHealth"}
-        statusTitle={`${DEMO_HEI_INSTITUTION_STATS.active} active · ${DEMO_HEI_INSTITUTION_STATS.pending} pending · ${DEMO_HEI_INSTITUTION_STATS.totalStudents.toLocaleString("en-IN")} students`}
+        statusTitle={
+          institutions.data
+            ? `${institutions.data.stats.active} active · ${institutions.data.stats.pending} pending · ${institutions.data.stats.totalStudents.toLocaleString("en-IN")} students`
+            : "Loading network status…"
+        }
         statusIcon={<CheckCircle2 className="h-4 w-4" />}
         ctaLabel="Invite new institution"
       />

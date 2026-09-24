@@ -66,8 +66,13 @@ async def get_student_profile(external_ref: str, state: AppState = Depends(get_s
             "institution": identity.institution,
             "target_institution": identity.target_institution,
             "enrolled_on": identity.enrolled_on,
-            "digilocker_linked": True,
-            "biometric_verified": True,
+            # No real DigiLocker OAuth or biometric/OTP channel is wired up
+            # (see services/auth/digilocker.py's module docstring) — these
+            # must never read as True by default. verification_mode tells
+            # the frontend which trust level actually backs this session.
+            "digilocker_linked": False,
+            "biometric_verified": False,
+            "verification_mode": "DEVELOPMENT",
         },
         "consents": [{
             "id": "c1",

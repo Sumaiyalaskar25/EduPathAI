@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { SemesterColumn as SemType } from "@/lib/constants/demo-pathways";
+import type { SemesterColumn as SemType } from "@/lib/view-models/pathway";
 import { CourseTile } from "./CourseTile";
 
 interface SemesterColumnProps {

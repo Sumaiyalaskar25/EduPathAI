@@ -25,6 +25,13 @@ async def get_bridge(bridge_id: UUID, state: AppState = Depends(get_state)):
         import json as _json
         missing_outcomes = _json.loads(missing_outcomes)
 
+    # The bridges table only stores the recognition decision (which resource,
+    # what coverage, is it enrolled) — the human-readable catalog fields
+    # (title, competency tags, prerequisites) live in the resource registry
+    # that BridgePath matched against. Join them here so the frontend never
+    # has to fall back to showing a raw resource_id as a title.
+    resource = state.resources.get(row["resource_id"])
+
     return {
         "id": str(row["id"]),
         "gap_id": str(row["gap_id"]),
@@ -37,6 +44,10 @@ async def get_bridge(bridge_id: UUID, state: AppState = Depends(get_state)):
         "recognition_status": row["recognition_status"],
         "prerequisite_met": row["prerequisite_met"],
         "enrolled": row["enrolled"],
+        "title": resource.title if resource else row["resource_id"],
+        "competencies": resource.competency_tags if resource else [],
+        "prerequisites": resource.prerequisites if resource else [],
+        "valid_until": resource.valid_until if resource else None,
         "gap": {
             "gap_type": gap_row["gap_type"],
             "description": gap_row["description"],

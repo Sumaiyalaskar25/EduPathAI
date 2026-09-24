@@ -6,23 +6,22 @@ import { cn } from "@/lib/utils/cn";
 interface CourseTileProps {
   code: string;
   title: string;
-  credits: number;
-  tag: "Theory" | "Lab" | "Theory & Lab";
+  credits: number | null;
+  tag: string;
 }
 
 const TAG_STYLES: Record<string, string> = {
   Theory: "bg-slate-100 text-slate-700",
-  Lab: "bg-slate-100 text-slate-700",
-  "Theory & Lab": "bg-slate-100 text-slate-700",
+  Lab: "bg-sky-100 text-sky-700",
+  "Theory & Lab": "bg-amber-100 text-amber-800",
+  Unknown: "bg-slate-50 text-slate-400",
 };
 
-/** Map display code to a demo course detail ID (lowercase, dash-separated). */
-function codeToId(code: string): string {
-  return code.toLowerCase().replace(/\s+/g, "-");
-}
-
 export function CourseTile({ code, title, credits, tag }: CourseTileProps) {
-  const href = `/student/courses/${codeToId(code)}`;
+  // Course codes (e.g. "CS-401") are the real primary key the backend
+  // looks up in GET /v1/courses/{code} — lowercasing/reformatting them
+  // here used to silently 404 every real course link.
+  const href = `/student/courses/${encodeURIComponent(code)}`;
 
   return (
     <Link
@@ -43,7 +42,7 @@ export function CourseTile({ code, title, credits, tag }: CourseTileProps) {
         </span>
       </div>
       <p className="mt-1 text-[12px] font-medium text-text-muted">
-        {credits} Credits
+        {credits !== null ? `${credits} Credits` : "Credits unknown"}
       </p>
     </Link>
   );

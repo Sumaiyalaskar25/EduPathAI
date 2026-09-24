@@ -59,3 +59,8 @@ class ResourceRegistry:
 
         scored.sort(key=lambda x: x[1], reverse=True)
         return scored[:max_results]
+
+    def get(self, resource_id: str) -> Resource | None:
+        """Look up a single resource by id (as stored on a `bridges` row's
+        `resource_id` — see services/api/orchestrator.py:resource.id)."""
+        return self._resources.get(resource_id)
