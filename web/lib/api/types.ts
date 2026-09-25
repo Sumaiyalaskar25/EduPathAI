@@ -452,6 +452,18 @@ export interface PolicySignal {
   affectedInstitutions: number;
 }
 
+export interface SystemTelemetry {
+  status: "OPERATIONAL" | "DEGRADED" | "MAINTENANCE";
+  ledgerBlocks: number;
+  chainIntegrity: string;
+  dbLatencyMs: number;
+  matcherEngine: string;
+  aiProviders: string[];
+  cacheHitRate: number;
+  lastBlockTime: string;
+  dpdpCompliance: string;
+}
+
 export interface GovAggregate {
   stats: {
     totalStudents: number;
@@ -464,6 +476,7 @@ export interface GovAggregate {
   trend: TrendPoint[];
   regionSignals: RegionSignal[];
   policySignals: PolicySignal[];
+  telemetry?: SystemTelemetry;
 }
 
 export interface SankeyNode {
