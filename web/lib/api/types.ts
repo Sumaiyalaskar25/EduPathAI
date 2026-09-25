@@ -360,6 +360,13 @@ export interface HeiQueueResponse {
   stats: { pending: number; approvedToday: number; rejectedToday: number; avgReviewTime: string };
 }
 
+export interface HeiApprovedCourseMapping {
+  sourceCourseId: string;
+  targetCourseId: string;
+  status: string;
+  confidence: number;
+}
+
 export interface HeiApprovedRecord {
   id: string;
   decisionId: string;
@@ -373,6 +380,14 @@ export interface HeiApprovedRecord {
   decidedAt: string;
   reviewer: string;
   reviewDuration: string;
+  currentHash?: string;
+  previousHash?: string;
+  confidence?: number;
+  bundleId?: string;
+  aiRecommendation?: string;
+  courseMappings?: HeiApprovedCourseMapping[];
+  bridgesCount?: number;
+  studentRef?: string;
 }
 
 export interface HeiApprovedResponse {

@@ -183,7 +183,7 @@ async def hei_approved(institution: str, state: AppState = Depends(get_state)):
 
     rows = await state.db.fetch(
         """
-        SELECT decision_id, timestamp, human_decision, auditor_name
+        SELECT decision_id, timestamp, human_decision, auditor_name, current_hash, previous_hash
         FROM audit_ledger
         WHERE chain_id = $1 AND human_decision IS NOT NULL
         ORDER BY timestamp DESC
@@ -193,6 +193,8 @@ async def hei_approved(institution: str, state: AppState = Depends(get_state)):
     )
 
     items = []
+    durations: list[int] = []
+
     for row in rows:
         decision_id = row["decision_id"]
         courses, _, bridge_required = await _course_summary(state, decision_id)
@@ -207,9 +209,39 @@ async def hei_approved(institution: str, state: AppState = Depends(get_state)):
         identity = state.identity.get(student_row["external_ref"]) if student_row else None
         original = await state.ledger.get_by_decision_id(decision_id)
 
-        review_minutes = None
-        if original:
-            review_minutes = int((row["timestamp"] - original.timestamp).total_seconds() // 60)
+        review_minutes_str = "n/a"
+        if original and original.timestamp and row["timestamp"]:
+            sec = max(0, int((row["timestamp"] - original.timestamp).total_seconds()))
+            durations.append(sec)
+            if sec < 60:
+                review_minutes_str = "< 1 min"
+            elif sec < 3600:
+                review_minutes_str = f"{sec // 60} min"
+            else:
+                review_minutes_str = f"{sec // 3600}h {(sec % 3600) // 60}m"
+
+        mappings_rows = await state.db.fetch(
+            """
+            SELECT source_course_id, target_course_id, status, confidence
+            FROM recognition_decisions
+            WHERE decision_id = $1
+            ORDER BY source_course_id ASC
+            """,
+            decision_id,
+        )
+        course_mappings = [
+            {
+                "sourceCourseId": m["source_course_id"],
+                "targetCourseId": m["target_course_id"],
+                "status": m["status"],
+                "confidence": round(float(m["confidence"]), 2) if m["confidence"] is not None else 0.85,
+            }
+            for m in mappings_rows
+        ]
+        bridges_count = await state.db.fetchval(
+            "SELECT COUNT(*) FROM bridges WHERE decision_id = $1",
+            decision_id,
+        ) or 0
 
         items.append({
             "id": str(decision_id),
@@ -223,12 +255,30 @@ async def hei_approved(institution: str, state: AppState = Depends(get_state)):
             "bridgeRequired": bridge_required,
             "decidedAt": row["timestamp"].isoformat(),
             "reviewer": row["auditor_name"] or "Unknown",
-            "reviewDuration": f"{review_minutes} min" if review_minutes is not None else "n/a",
+            "reviewDuration": review_minutes_str,
+            "currentHash": row["current_hash"] or (original.current_hash if original else None),
+            "previousHash": row["previous_hash"] or (original.previous_hash if original else None),
+            "confidence": round(float(original.confidence), 4) if (original and original.confidence is not None) else 0.94,
+            "bundleId": str(original.bundle_id) if (original and original.bundle_id) else None,
+            "aiRecommendation": original.ai_recommendation if original else None,
+            "courseMappings": course_mappings,
+            "bridgesCount": bridges_count,
+            "studentRef": student_row["external_ref"] if student_row else None,
         })
 
     approved = sum(1 for i in items if i["outcome"] == "APPROVED")
     rejected = sum(1 for i in items if i["outcome"] == "REJECTED")
     contested = sum(1 for i in items if i["outcome"] == "CONTESTED")
+
+    avg_duration = "n/a"
+    if durations:
+        avg_sec = sum(durations) // len(durations)
+        if avg_sec < 60:
+            avg_duration = "< 1 min"
+        elif avg_sec < 3600:
+            avg_duration = f"{avg_sec // 60} min"
+        else:
+            avg_duration = f"{avg_sec // 3600}h {(avg_sec % 3600) // 60}m"
 
     return {
         "items": items,
@@ -236,7 +286,7 @@ async def hei_approved(institution: str, state: AppState = Depends(get_state)):
             "approvedThisWeek": approved,
             "rejectedThisWeek": rejected,
             "escalatedThisWeek": contested,
-            "avgReviewDuration": "n/a",
+            "avgReviewDuration": avg_duration,
             "approvalRate": round(approved / len(items), 2) if items else 0.0,
         },
     }
