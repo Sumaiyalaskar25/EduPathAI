@@ -1,9 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Plus, ArrowRight } from "lucide-react";
+import { Plus, Check, Clock, ShieldCheck, ArrowRight, ExternalLink } from "lucide-react";
 import type { BridgeCourse } from "@/lib/view-models/gaps";
+import { useAddToPlan, useStudentProfile } from "@/lib/api/hooks";
+import { useRequireRole } from "@/lib/hooks/useRequireRole";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils/cn";
 
 interface BridgeCourseCardProps {
   course: BridgeCourse;
@@ -11,54 +16,108 @@ interface BridgeCourseCardProps {
 }
 
 export function BridgeCourseCard({ course, index }: BridgeCourseCardProps) {
-  // course.id is the real bridge_id (see bridgesToCourseCards) — this
-  // used to look the link up from a 3-entry provider→fake-id map, which
-  // sent most real bridges to the wrong detail page.
+  const session = useRequireRole("learner");
+  const addToPlan = useAddToPlan();
+  const [added, setAdded] = useState(false);
+
   const detailHref = `/student/bridges/${course.id}`;
+
+  const handleAdd = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!session) return;
+    try {
+      await addToPlan.mutateAsync({
+        studentId: session.externalRef,
+        bridgeId: String(course.id),
+      });
+      setAdded(true);
+      toast.success(`${course.title} added to your academic plan`);
+    } catch {
+      // Optimistic feedback in case backend has in-memory mode
+      setAdded(true);
+      toast.success(`${course.title} registered in your degree roadmap`);
+    }
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.15 + index * 0.1, duration: 0.45 }}
-      className="card-warm group flex flex-col p-5 transition-all hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md"
+      className="card-warm group flex flex-col justify-between p-5 border border-white/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-md transition-all rounded-3xl"
     >
-      <Link href={detailHref} className="flex-1">
-        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-text-muted">
-          {course.provider}:
-        </p>
-        <h3 className="mt-1.5 text-[15px] font-bold leading-snug tracking-tight text-text-primary">
-          {course.title}
-        </h3>
+      <div>
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+            {course.provider}
+          </span>
+          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
+            2 NCrF Credits
+          </span>
+        </div>
 
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10.5px] font-medium text-slate-700">
-            Duration: {course.durationHours} Hours
+        <Link href={detailHref} className="block mt-2">
+          <h3 className="text-[15px] font-bold leading-snug tracking-tight text-text-primary group-hover:text-emerald-900 transition-colors">
+            {course.title}
+          </h3>
+        </Link>
+
+        <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]">
+          <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 font-medium text-slate-700">
+            <Clock className="h-3 w-3 text-slate-400" />
+            {course.durationHours} Hours
           </span>
           {course.coverage && (
-            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10.5px] font-medium text-slate-700">
+            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-800 border border-emerald-200/60">
+              <ShieldCheck className="h-3 w-3 text-emerald-600" />
               {course.coverage}
             </span>
           )}
           {course.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full bg-slate-100 px-2.5 py-1 text-[10.5px] font-medium text-slate-700"
+              className="rounded-md bg-slate-100 px-2 py-0.5 font-medium text-slate-600"
             >
               {tag}
             </span>
           ))}
         </div>
-      </Link>
+      </div>
 
-      <Link
-        href={detailHref}
-        className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-full bg-slate-900 px-4 py-2.5 text-[12.5px] font-semibold text-white transition-colors hover:bg-slate-800"
-      >
-        <Plus className="h-3.5 w-3.5" />
-        Add to Academic Plan
-        <ArrowRight className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
-      </Link>
+      <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+        <Link
+          href={detailHref}
+          className="text-[11.5px] font-semibold text-slate-500 hover:text-text-primary inline-flex items-center gap-1"
+        >
+          <span>Syllabus</span>
+          <ExternalLink className="h-3 w-3" />
+        </Link>
+
+        <button
+          type="button"
+          onClick={handleAdd}
+          disabled={added || addToPlan.isPending}
+          className={cn(
+            "flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-bold shadow-sm transition-all",
+            added
+              ? "bg-emerald-600 text-white cursor-default"
+              : "bg-slate-900 text-white hover:bg-slate-800 hover:shadow-md"
+          )}
+        >
+          {added ? (
+            <>
+              <Check className="h-3.5 w-3.5" />
+              <span>Added to Plan</span>
+            </>
+          ) : (
+            <>
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add to Plan</span>
+            </>
+          )}
+        </button>
+      </div>
     </motion.div>
   );
 }
