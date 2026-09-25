@@ -10,6 +10,7 @@ import type { IdentityMode } from "@/lib/constants/auth-ui";
 import { useVerifyIdentity } from "@/lib/api/hooks";
 import { useSessionStore } from "@/lib/store/session";
 import type { AuthOverviewResponse } from "@/lib/api/types";
+import { StudentOnboardingModal } from "@/components/auth/StudentOnboardingModal";
 
 const IDENTITY_ROUTES: Record<IdentityMode, string> = {
   learner: "/student",
@@ -28,6 +29,7 @@ export function DigiLockerAccess({ mode, modeLabel, personas }: Props) {
   const [identifier, setIdentifier] = useState("");
   const [consent, setConsent] = useState(false);
   const [activePersonaId, setActivePersonaId] = useState<string | null>(null);
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
 
   const setSession = useSessionStore((s) => s.setSession);
   const verify = useVerifyIdentity();
@@ -120,8 +122,37 @@ export function DigiLockerAccess({ mode, modeLabel, personas }: Props) {
           </p>
         </header>
 
+        {/* First-Time Learner Registration Banner */}
+        {mode === "learner" && (
+          <div className="mt-4 rounded-2xl border border-indigo-200/90 bg-gradient-to-r from-indigo-50/90 via-purple-50/80 to-blue-50/90 p-3.5 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm">
+                  <Sparkles className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-900">
+                    First-Time Student Onboarding
+                  </p>
+                  <p className="text-[11px] text-slate-600 leading-tight">
+                    Set up your college, semester, transcript &amp; target course.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOnboardingOpen(true)}
+                className="shrink-0 flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-indigo-700 transition-all"
+              >
+                <span>Register Now</span>
+                <ArrowRight className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* 1-Click Interactive Persona Selector */}
-        <div className="mt-5 rounded-2xl border border-border-subtle bg-white/70 p-4">
+        <div className="mt-4 rounded-2xl border border-border-subtle bg-white/70 p-4">
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-text-muted">
               <Sparkles className="h-3.5 w-3.5 text-amber-500" />
@@ -306,6 +337,13 @@ export function DigiLockerAccess({ mode, modeLabel, personas }: Props) {
         </span>
         <span>DPDP Compliant (2023)</span>
       </div>
+
+      {mode === "learner" && (
+        <StudentOnboardingModal
+          open={onboardingOpen}
+          onOpenChange={setOnboardingOpen}
+        />
+      )}
     </motion.div>
   );
 }

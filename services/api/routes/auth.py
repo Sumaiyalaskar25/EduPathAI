@@ -52,6 +52,60 @@ async def verify(req: VerifyRequest, state: AppState = Depends(get_state)):
     )
 
 
+class StudentRegisterRequest(BaseModel):
+    full_name: str
+    institution: str
+    programme: str
+    semester: int = 4
+    target_institution: str = "IIT Bombay"
+    target_programme: str = "BTech-CSE"
+    apaar_id: str | None = None
+    courses: list[dict] = []
+    consent: bool = True
+
+
+@router.post("/register-student", response_model=VerifyResponse)
+async def register_student(req: StudentRegisterRequest, state: AppState = Depends(get_state)):
+    if not req.consent:
+        raise HTTPException(status_code=400, detail="consent_required")
+    if not req.full_name.strip() or not req.institution.strip():
+        raise HTTPException(status_code=400, detail="Missing required student profile fields")
+
+    identity = state.identity.register_student(
+        full_name=req.full_name.strip(),
+        institution=req.institution.strip(),
+        programme=req.programme.strip(),
+        semester=req.semester,
+        target_institution=req.target_institution.strip(),
+        target_programme=req.target_programme.strip(),
+        apaar_id=req.apaar_id,
+        courses=req.courses,
+    )
+
+    if state.db is not None:
+        from services.db.students import ensure_student
+        await ensure_student(state.db, identity.external_ref)
+
+    from services.auth.session import issue_token
+    token = issue_token(
+        external_ref=identity.external_ref,
+        role="learner",
+        institution=identity.institution,
+        display_name=identity.full_name,
+    )
+
+    return VerifyResponse(
+        token=token,
+        role="learner",
+        external_ref=identity.external_ref,
+        display_name=identity.full_name,
+        institution=identity.institution,
+        programme=identity.programme,
+        target_institution=identity.target_institution,
+        target_programme=identity.target_programme,
+    )
+
+
 @router.get("/overview")
 async def auth_overview(state: AppState = Depends(get_state)):
     stats = {

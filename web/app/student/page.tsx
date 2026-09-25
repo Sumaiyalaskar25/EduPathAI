@@ -32,6 +32,9 @@ import { toRecognitionView } from "@/lib/transforms/recognition";
 import { DecisionInspectorModal } from "@/components/student/DecisionInspectorModal";
 import { CourseModal } from "@/components/student/CourseModal";
 import { NetworkModal } from "@/components/auth/NetworkModal";
+import { CreditHistoryLedger } from "@/components/student/CreditHistoryLedger";
+import { DestinationModal } from "@/components/student/DestinationModal";
+import { useSessionStore } from "@/lib/store/session";
 
 /* ───── helpers ───── */
 
@@ -57,6 +60,7 @@ interface HeroProps {
   programme?: string;
   apaarMasked?: string;
   onOpenNetwork: () => void;
+  onOpenDestinationModal: () => void;
 }
 
 function Hero({
@@ -66,6 +70,7 @@ function Hero({
   programme = "B.Tech Computer Science & Engineering",
   apaarMasked = "3390 **** 1187",
   onOpenNetwork,
+  onOpenDestinationModal,
 }: HeroProps) {
   return (
     <motion.section
@@ -121,6 +126,14 @@ function Hero({
             <span className="font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
               {targetInstitution}
             </span>
+            <button
+              type="button"
+              onClick={onOpenDestinationModal}
+              className="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition-colors"
+            >
+              <Target className="h-3 w-3" />
+              <span>Change Destination</span>
+            </button>
             <span className="text-text-muted">·</span>
             <span>{programme}</span>
             <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">
@@ -136,6 +149,14 @@ function Hero({
 
         {/* Action Buttons */}
         <div className="flex shrink-0 flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={onOpenDestinationModal}
+            className="flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/80 px-4 py-2.5 text-[13px] font-semibold text-indigo-900 transition-all hover:bg-indigo-100 hover:border-indigo-300 hover:shadow-sm"
+          >
+            <Target className="h-4 w-4 text-indigo-600" />
+            <span>Select Target College</span>
+          </button>
           <Link href="/student/pathways" className="pill-navy shadow-md shadow-[rgb(26_42_82)]/20 hover:shadow-lg">
             <Sparkles className="h-4 w-4 text-emerald-300" />
             <span>Review Pathway</span>
@@ -621,9 +642,11 @@ export default function StudentHome() {
   const session = useRequireRole("learner");
   const profile = useStudentProfile(session?.externalRef);
   const runPathway = useRunPathway();
+  const setTargetDestination = useSessionStore((s) => s.setTargetDestination);
 
   // Dialog State
   const [networkModalOpen, setNetworkModalOpen] = useState(false);
+  const [destinationModalOpen, setDestinationModalOpen] = useState(false);
   const [inspectedDecision, setInspectedDecision] = useState<DecisionHistoryItem | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<{
     code: string;
@@ -647,6 +670,16 @@ export default function StudentHome() {
   }, [session]);
 
   if (!session) return null;
+
+  const handleDestinationChange = async (targetInst: string, targetProg: string) => {
+    if (!session) return;
+    setTargetDestination(targetInst, targetProg);
+    await runPathway.mutateAsync({
+      studentId: session.externalRef,
+      targetProgramme: targetProg,
+      institution: targetInst,
+    });
+  };
 
   const firstName = session.displayName.split(" ")[0];
   const recognition = runPathway.data?.recognition;
@@ -695,6 +728,7 @@ export default function StudentHome() {
           programme={session.programme ?? "B.Tech Computer Science & Engineering"}
           apaarMasked="3390 **** 1187"
           onOpenNetwork={() => setNetworkModalOpen(true)}
+          onOpenDestinationModal={() => setDestinationModalOpen(true)}
         />
 
         {runPathway.isPending && !runPathway.data ? (
@@ -703,7 +737,7 @@ export default function StudentHome() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500" />
             </span>
-            <span>Running neural pathway reconciliation against IIT Kanpur curriculum…</span>
+            <span>Running neural pathway reconciliation against target curriculum…</span>
           </div>
         ) : recognition ? (
           <>
@@ -718,12 +752,20 @@ export default function StudentHome() {
               onSelectCourse={(code) =>
                 setSelectedCourse({
                   code,
-                  institution: session.targetInstitution ?? "IIT Bombay",
+                  institution: session.targetInstitution ?? "IIT Kanpur",
                 })
               }
             />
           </>
         ) : null}
+
+        {/* Academic Credit History / Depository Ledger */}
+        <CreditHistoryLedger
+          externalRef={session.externalRef}
+          transcript={profile.data?.transcript}
+          sourceInstitution={session.institution ?? "VIT Vellore"}
+          programme={session.programme ?? "B.Tech Computer Science & Engineering"}
+        />
 
         <div className="grid gap-5 lg:grid-cols-2">
           <ContinueWhereYouLeftOff
@@ -740,6 +782,15 @@ export default function StudentHome() {
         onOpenChange={(open) => !open && setInspectedDecision(null)}
         decision={inspectedDecision}
         studentRef={session.externalRef}
+      />
+
+      {/* Target Destination & Course Selection Dialog */}
+      <DestinationModal
+        open={destinationModalOpen}
+        onOpenChange={setDestinationModalOpen}
+        currentTargetInstitution={session.targetInstitution ?? "IIT Kanpur"}
+        currentTargetProgramme={session.targetProgramme ?? "B.Tech Computer Science & Engineering"}
+        onDestinationChange={handleDestinationChange}
       />
 
       {/* Course Detail Dialog */}

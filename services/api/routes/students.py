@@ -115,6 +115,11 @@ async def get_student_profile(external_ref: str, state: AppState = Depends(get_s
                 "active": True,
             },
         ],
+        "transcript": {
+            "semester": getattr(identity, "semester", 4),
+            "total_credits": getattr(identity, "credits_completed", 72),
+            "courses": state.identity.get_transcript(external_ref) if hasattr(state.identity, "get_transcript") else [],
+        },
         "decisions": decisions,
         "security": {
             "chain_integrity": chain_integrity,
@@ -122,6 +127,34 @@ async def get_student_profile(external_ref: str, state: AppState = Depends(get_s
             "ledger_head": ledger_head,
             "compliance": "DPDP Act (2023) Section 6/7 Fully Compliant",
         },
+    }
+
+
+class TranscriptUpdateRequest(BaseModel):
+    semester: int | None = None
+    courses: list[dict]
+
+
+@router.post("/student/{external_ref}/transcript")
+async def update_student_transcript(
+    external_ref: str,
+    req: TranscriptUpdateRequest,
+    state: AppState = Depends(get_state),
+):
+    identity = state.identity.get(external_ref)
+    if not identity:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    updated = state.identity.update_transcript(
+        external_ref=external_ref,
+        courses=req.courses,
+        semester=req.semester,
+    )
+    return {
+        "status": "updated",
+        "external_ref": external_ref,
+        "total_credits": state.identity.get(external_ref).credits_completed,
+        "courses": updated,
     }
 
 

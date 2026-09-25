@@ -28,6 +28,8 @@ import type {
   GovPolicyResponse,
   PolicyOverride,
   AuthOverviewResponse,
+  StudentRegisterRequest,
+  StudentCourseItem,
 } from "./types";
 import { getCurrentSession } from "@/lib/store/session";
 
@@ -94,6 +96,24 @@ export async function verifyIdentity(req: VerifyRequest): Promise<VerifyResponse
   return request<VerifyResponse>("/v1/auth/verify", {
     method: "POST",
     body: JSON.stringify(req),
+  });
+}
+
+export async function registerStudent(req: StudentRegisterRequest): Promise<VerifyResponse> {
+  return request<VerifyResponse>("/v1/auth/register-student", {
+    method: "POST",
+    body: JSON.stringify(req),
+  });
+}
+
+export async function updateStudentTranscript(
+  externalRef: string,
+  courses: Partial<StudentCourseItem>[],
+  semester?: number
+): Promise<{ status: string; total_credits: number; courses: StudentCourseItem[] }> {
+  return request(`/v1/student/${externalRef}/transcript`, {
+    method: "POST",
+    body: JSON.stringify({ courses, semester }),
   });
 }
 

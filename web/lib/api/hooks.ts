@@ -8,7 +8,7 @@
 
 import { useMutation, useQuery, useQueries, useQueryClient } from "@tanstack/react-query";
 import * as api from "./client";
-import type { VerifyRequest, CourseDetail } from "./types";
+import type { VerifyRequest, CourseDetail, StudentRegisterRequest, StudentCourseItem } from "./types";
 
 /* ─────────── Auth ─────────── */
 
@@ -24,6 +24,23 @@ export function useAuthOverview() {
 export function useVerifyIdentity() {
     return useMutation({
         mutationFn: (req: VerifyRequest) => api.verifyIdentity(req),
+    });
+}
+
+export function useRegisterStudent() {
+    return useMutation({
+        mutationFn: (req: StudentRegisterRequest) => api.registerStudent(req),
+    });
+}
+
+export function useUpdateStudentTranscript() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: ({ externalRef, courses, semester }: { externalRef: string; courses: Partial<StudentCourseItem>[]; semester?: number }) =>
+            api.updateStudentTranscript(externalRef, courses, semester),
+        onSuccess: (_data, vars) => {
+            qc.invalidateQueries({ queryKey: ["student-profile", vars.externalRef] });
+        },
     });
 }
 

@@ -27,6 +27,7 @@ interface SessionState {
     session: Session | null;
     setSession: (session: Session) => void;
     setTargetInstitution: (targetInstitution: string) => void;
+    setTargetDestination: (targetInstitution: string, targetProgramme?: string) => void;
     clearSession: () => void;
 }
 
@@ -39,6 +40,18 @@ export const useSessionStore = create<SessionState>()(
                 set((state) =>
                     state.session
                         ? { session: { ...state.session, targetInstitution } }
+                        : state
+                ),
+            setTargetDestination: (targetInstitution, targetProgramme) =>
+                set((state) =>
+                    state.session
+                        ? {
+                              session: {
+                                  ...state.session,
+                                  targetInstitution,
+                                  targetProgramme: targetProgramme ?? state.session.targetProgramme,
+                              },
+                          }
                         : state
                 ),
             clearSession: () => set({ session: null }),

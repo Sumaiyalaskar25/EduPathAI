@@ -9,6 +9,7 @@ import {
   X,
   AlertTriangle,
   ArrowUpRight,
+  ArrowRight,
   Clock,
   ChevronRight,
   Sparkles,
@@ -40,18 +41,56 @@ function StatsBar({ stats }: { stats: HeiQueueResponse["stats"] }) {
     value: number | string;
     sub: string;
     tone: "amber" | "emerald" | "rose" | "navy";
+    badge: string;
+    Icon: any;
     isText?: boolean;
   }[] = [
-    { label: "Pending review", value: stats.pending, sub: "Decisions awaiting gatekeeper", tone: "amber" },
-    { label: "Approved today", value: stats.approvedToday, sub: "Appended to SHA-256 ledger", tone: "emerald" },
-    { label: "Rejected today", value: stats.rejectedToday, sub: "Syllabus divergence documented", tone: "rose" },
-    { label: "Avg review time", value: stats.avgReviewTime === "n/a" ? "< 2.4h" : stats.avgReviewTime, sub: "Target 24h SLA: 100% on time", tone: "navy", isText: true },
+    {
+      label: "Pending Review",
+      value: stats.pending,
+      sub: "Decisions awaiting gatekeeper",
+      tone: "amber",
+      badge: "Action Needed",
+      Icon: Clock,
+    },
+    {
+      label: "Approved Today",
+      value: stats.approvedToday,
+      sub: "Appended to SHA-256 ledger",
+      tone: "emerald",
+      badge: "Live Ledger",
+      Icon: CheckCircle2,
+    },
+    {
+      label: "Rejected Today",
+      value: stats.rejectedToday,
+      sub: "Syllabus divergence documented",
+      tone: "rose",
+      badge: "Curriculum Gap",
+      Icon: AlertTriangle,
+    },
+    {
+      label: "Avg Review Time",
+      value: stats.avgReviewTime === "n/a" ? "< 2.4h" : stats.avgReviewTime,
+      sub: "Target 24h SLA: 100% on time",
+      tone: "navy",
+      badge: "SLA Compliant",
+      Icon: ShieldCheck,
+      isText: true,
+    },
   ];
 
   const toneMap = {
-    amber: "text-amber-700",
-    emerald: "text-emerald-700",
-    rose: "text-rose-700",
+    amber: "text-amber-700 bg-amber-50 border-amber-200/80",
+    emerald: "text-emerald-700 bg-emerald-50 border-emerald-200/80",
+    rose: "text-rose-700 bg-rose-50 border-rose-200/80",
+    navy: "text-[rgb(26_42_82)] bg-slate-100 border-slate-200/80",
+  };
+
+  const textToneMap = {
+    amber: "text-amber-600",
+    emerald: "text-emerald-600",
+    rose: "text-rose-600",
     navy: "text-[rgb(26_42_82)]",
   };
 
@@ -63,21 +102,33 @@ function StatsBar({ stats }: { stats: HeiQueueResponse["stats"] }) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 + i * 0.06, duration: 0.45 }}
-          className="card-warm relative overflow-hidden rounded-2xl p-5.5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
+          className="card-warm relative flex flex-col justify-between overflow-hidden rounded-3xl p-5 sm:p-6 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 border border-white/80"
         >
-          <p className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-text-muted">
-            {s.label}
-          </p>
-          <p
-            className={cn(
-              "mt-3 font-display font-bold leading-none tracking-tight tabular-nums",
-              s.isText ? "text-[26px]" : "text-[32px]",
-              toneMap[s.tone]
-            )}
-          >
-            {s.value}
-          </p>
-          <p className="mt-2 text-[11.5px] font-medium text-text-secondary">{s.sub}</p>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-text-muted">
+              {s.label}
+            </span>
+            <span className={cn("rounded-md px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider border", toneMap[s.tone])}>
+              {s.badge}
+            </span>
+          </div>
+
+          <div className="mt-3 flex items-baseline gap-1">
+            <span
+              className={cn(
+                "font-display font-bold leading-none tracking-tight tabular-nums",
+                s.isText ? "text-[26px] sm:text-[30px]" : "text-[32px] sm:text-[38px]",
+                textToneMap[s.tone]
+              )}
+            >
+              {s.value}
+            </span>
+          </div>
+
+          <div className="mt-3 flex items-center justify-between border-t border-slate-100/90 pt-2.5 text-[11.5px] text-text-secondary">
+            <span className="truncate">{s.sub}</span>
+            <s.Icon className={cn("h-3.5 w-3.5 shrink-0 opacity-70 ml-1.5", textToneMap[s.tone])} />
+          </div>
         </motion.div>
       ))}
     </div>
@@ -318,57 +369,61 @@ function ReviewRow({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ delay: index * 0.03, duration: 0.35 }}
-      className="group rounded-2xl border border-slate-200/80 bg-white/80 p-5 transition-all duration-200 hover:border-emerald-300 hover:bg-white hover:shadow-xs"
+      className="group card-warm rounded-3xl border border-white/80 bg-white/90 p-5 sm:p-6 transition-all duration-200 hover:border-emerald-300 hover:bg-white hover:shadow-lg shadow-xs"
     >
-      <div className="grid gap-5 md:grid-cols-[1fr_auto]">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
         {/* Left: content */}
-        <div className="min-w-0 cursor-pointer" onClick={() => onInspect(item)}>
+        <div className="min-w-0 cursor-pointer flex-1" onClick={() => onInspect(item)}>
           <div className="flex flex-wrap items-center gap-2">
             <span
               className={cn("h-2.5 w-2.5 shrink-0 rounded-full", PRIORITY_DOT[item.priority])}
               aria-label={`${item.priority} priority`}
             />
-            <p className="text-[15.5px] font-bold tracking-tight text-slate-900 group-hover:text-emerald-950 transition-colors">
+            <p className="text-[16px] font-bold tracking-tight text-slate-900 group-hover:text-emerald-950 transition-colors">
               {item.courses}
             </p>
             <RecommendationChip rec={item.aiRecommendation} />
             <span
               className={cn(
-                "rounded-full border px-2 py-0.2 text-[9.5px] font-bold uppercase tracking-wider",
+                "rounded-full border px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider",
                 STATUS_CHIP[item.status]
               )}
             >
               {item.status}
             </span>
-            <span className="text-[11px] font-semibold text-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="text-[11.5px] font-semibold text-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity">
               Inspect Evidence →
             </span>
           </div>
 
-          <p className="mt-1.5 text-[13px] text-text-secondary">
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-[13px] text-text-secondary">
             <span className="font-bold text-slate-900">{item.studentName}</span>
-            {" · "}
+            <span className="text-slate-300">•</span>
             <span>{item.studentProgramme}</span>
-          </p>
+          </div>
 
           <div className="mt-2.5 flex flex-wrap items-center gap-2 text-[12px] font-medium text-text-muted">
             <span className="font-semibold text-slate-700">{item.sourceInstitution}</span>
-            <ChevronRight className="h-3 w-3 text-slate-400" />
-            <span className="font-semibold text-slate-900">{item.targetInstitution}</span>
+            <ArrowRight className="h-3 w-3 text-emerald-600" />
+            <span className="font-semibold text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80">
+              {item.targetInstitution}
+            </span>
             <span>•</span>
-            <Clock className="h-3.5 w-3.5 text-slate-400" />
-            <span>{item.age}</span>
+            <span className="flex items-center gap-1">
+              <Clock className="h-3 w-3 text-slate-400" />
+              {item.age}
+            </span>
+            <span>•</span>
+            <span className="font-mono text-[10.5px] text-slate-400 truncate max-w-xs">
+              SHA-256: {item.decisionId.slice(0, 8)}…{item.decisionId.slice(-4)}
+            </span>
           </div>
-
-          <p className="mt-2 font-mono text-[10.5px] text-slate-400 truncate max-w-md">
-            SHA-256 Block Ref: {item.decisionId}
-          </p>
         </div>
 
         {/* Right: confidence + actions */}
-        <div className="flex flex-col items-start gap-3.5 md:min-w-[190px] md:items-end justify-center">
-          <div className="w-full md:w-auto">
-            <div className="flex items-center justify-between gap-3 text-[11px] font-semibold">
+        <div className="flex flex-row items-center justify-between gap-4 border-t border-slate-100 pt-3 lg:flex-col lg:items-end lg:justify-center lg:border-t-0 lg:pt-0 lg:min-w-[200px]">
+          <div className="w-auto lg:w-[160px]">
+            <div className="flex items-center justify-between gap-2 text-[11px] font-semibold">
               <span className="text-text-muted">AI Confidence</span>
               <span
                 className={cn(
@@ -383,7 +438,7 @@ function ReviewRow({
                 {Math.round(item.confidence * 100)}%
               </span>
             </div>
-            <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100 md:w-[150px] shadow-2xs">
+            <div className="mt-1.5 h-2 w-[120px] overflow-hidden rounded-full bg-slate-100 sm:w-[160px] shadow-2xs">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${item.confidence * 100}%` }}
@@ -406,7 +461,7 @@ function ReviewRow({
                 type="button"
                 onClick={() => onAction(item.id, "reject")}
                 disabled={acting}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-[12px] font-bold text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
+                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-[12px] font-bold text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
               >
                 <X className="h-3.5 w-3.5" />
                 <span>Reject</span>
@@ -415,7 +470,7 @@ function ReviewRow({
                 type="button"
                 onClick={() => onAction(item.id, "approve")}
                 disabled={acting}
-                className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-1.5 text-[12px] font-bold text-white shadow-xs hover:bg-emerald-700 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
+                className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-[12px] font-bold text-white shadow-xs hover:bg-emerald-700 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
               >
                 <Check className="h-3.5 w-3.5" />
                 <span>{acting ? "Signing…" : "Approve"}</span>

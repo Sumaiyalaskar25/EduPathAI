@@ -272,6 +272,33 @@ export interface DecisionHistoryItem {
   auditor: string;
 }
 
+export interface StudentCourseItem {
+  code: string;
+  title: string;
+  credits: number;
+  grade: string;
+  semester: number;
+  domain?: string;
+}
+
+export interface StudentTranscript {
+  semester: number;
+  total_credits: number;
+  courses: StudentCourseItem[];
+}
+
+export interface StudentRegisterRequest {
+  full_name: string;
+  institution: string;
+  programme: string;
+  semester: number;
+  target_institution?: string;
+  target_programme?: string;
+  apaar_id?: string;
+  courses?: Partial<StudentCourseItem>[];
+  consent?: boolean;
+}
+
 export interface StudentProfile {
   identity: {
     full_name: string;
@@ -287,6 +314,7 @@ export interface StudentProfile {
   };
   consents: ConsentEntry[];
   decisions: DecisionHistoryItem[];
+  transcript?: StudentTranscript;
   security: {
     chain_integrity: string;
     raw_docs_archived: number;
