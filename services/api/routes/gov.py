@@ -23,11 +23,43 @@ router = APIRouter(prefix="/v1/gov", tags=["gov"])
 
 _INSTITUTIONS_PATH = Path("data/institutions_directory.json")
 
+_WELL_KNOWN_HEI_STATES: dict[str, str] = {
+    "University of Calcutta": "West Bengal",
+    "Anna University": "Tamil Nadu",
+    "NIT Trichy": "Tamil Nadu",
+    "VIT Vellore": "Tamil Nadu",
+    "BITS Pilani": "Rajasthan",
+    "IIT Bombay": "Maharashtra",
+    "IIT Delhi": "Delhi",
+    "IIT Madras": "Tamil Nadu",
+    "IIT Kanpur": "Uttar Pradesh",
+    "IIT Kharagpur": "West Bengal",
+    "IIT Roorkee": "Uttarakhand",
+    "IIT Guwahati": "Assam",
+    "IISc Bangalore": "Karnataka",
+    "Jadavpur University": "West Bengal",
+    "Delhi University": "Delhi",
+    "Banaras Hindu University": "Uttar Pradesh",
+    "Aligarh Muslim University": "Uttar Pradesh",
+    "Manipal Academy of Higher Education": "Karnataka",
+    "Amrita Vishwa Vidyapeetham": "Tamil Nadu",
+    "SRM Institute of Science and Technology": "Tamil Nadu",
+    "Thapar Institute of Engineering and Technology": "Punjab",
+}
+
 
 def _institution_state_map() -> dict[str, str]:
-    if not _INSTITUTIONS_PATH.exists():
-        return {}
-    return {i["short_name"]: i["state"] for i in json.loads(_INSTITUTIONS_PATH.read_text(encoding="utf-8"))}
+    mapping = dict(_WELL_KNOWN_HEI_STATES)
+    if _INSTITUTIONS_PATH.exists():
+        try:
+            for i in json.loads(_INSTITUTIONS_PATH.read_text(encoding="utf-8")):
+                if "short_name" in i and "state" in i:
+                    mapping[i["short_name"]] = i["state"]
+                if "name" in i and "state" in i:
+                    mapping[i["name"]] = i["state"]
+        except Exception:
+            pass
+    return mapping
 
 
 @router.get("/aggregate")
