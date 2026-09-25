@@ -198,3 +198,37 @@ async def plan_update(req: PlanUpdateRequest, state: AppState = Depends(get_stat
         payload={"student_id": req.student_id, "decision_id": req.decision_id},
     )
     return {"status": "updated"}
+
+
+class UpdateTargetRequest(BaseModel):
+    target_institution: str
+    target_programme: str | None = None
+
+
+@router.patch("/student/{external_ref}/target")
+async def update_student_target(
+    external_ref: str,
+    req: UpdateTargetRequest,
+    state: AppState = Depends(get_state),
+):
+    if hasattr(state.identity, "update_target"):
+        state.identity.update_target(
+            external_ref=external_ref,
+            target_institution=req.target_institution,
+            target_programme=req.target_programme,
+        )
+    else:
+        import dataclasses
+        identity = state.identity.get(external_ref)
+        if identity and hasattr(state.identity, "_by_ref"):
+            kwargs = {"target_institution": req.target_institution}
+            if req.target_programme:
+                kwargs["target_programme"] = req.target_programme
+            state.identity._by_ref[external_ref] = dataclasses.replace(identity, **kwargs)
+
+    return {
+        "status": "updated",
+        "external_ref": external_ref,
+        "target_institution": req.target_institution,
+    }
+

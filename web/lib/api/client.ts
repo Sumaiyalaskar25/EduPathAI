@@ -186,6 +186,20 @@ export async function downloadStudentExport(externalRef: string): Promise<Blob> 
   return requestBlob(`/v1/student/${externalRef}/export`);
 }
 
+export async function updateStudentTarget(
+  externalRef: string,
+  targetInstitution: string,
+  targetProgramme?: string
+): Promise<{ status: string; target_institution: string }> {
+  return request(`/v1/student/${encodeURIComponent(externalRef)}/target`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      target_institution: targetInstitution,
+      ...(targetProgramme ? { target_programme: targetProgramme } : {}),
+    }),
+  });
+}
+
 /* ─────────── Courses / Bridges ─────────── */
 
 export async function getCourse(code: string): Promise<CourseDetail> {

@@ -26,6 +26,7 @@ export interface Session {
 interface SessionState {
     session: Session | null;
     setSession: (session: Session) => void;
+    setTargetInstitution: (targetInstitution: string) => void;
     clearSession: () => void;
 }
 
@@ -34,6 +35,12 @@ export const useSessionStore = create<SessionState>()(
         (set) => ({
             session: null,
             setSession: (session) => set({ session }),
+            setTargetInstitution: (targetInstitution) =>
+                set((state) =>
+                    state.session
+                        ? { session: { ...state.session, targetInstitution } }
+                        : state
+                ),
             clearSession: () => set({ session: null }),
         }),
         { name: "edupathai-session" }

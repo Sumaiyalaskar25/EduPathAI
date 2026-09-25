@@ -79,3 +79,21 @@ class IdentityDirectory:
     def all_reviewers(self) -> list[Identity]:
         return [i for i in self._by_ref.values() if i.role_title and not i.programme
                 and i.external_ref.startswith("reviewer-")]
+
+    def update_target(
+        self,
+        external_ref: str,
+        target_institution: str,
+        target_programme: Optional[str] = None,
+    ) -> Optional[Identity]:
+        import dataclasses
+        identity = self._by_ref.get(external_ref)
+        if identity is None:
+            return None
+        kwargs: dict[str, str] = {"target_institution": target_institution}
+        if target_programme:
+            kwargs["target_programme"] = target_programme
+        updated = dataclasses.replace(identity, **kwargs)
+        self._by_ref[external_ref] = updated
+        return updated
+
