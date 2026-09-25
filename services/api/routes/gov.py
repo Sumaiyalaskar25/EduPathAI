@@ -298,6 +298,24 @@ async def update_gov_policy(req: PolicyUpdateRequest, state: AppState = Depends(
     return dict(row)
 
 
+@router.delete("/policy/{override_id}")
+async def delete_gov_policy(override_id: str, state: AppState = Depends(get_state),
+                            session: Session = Depends(get_session)):
+    if session.role != "ministry":
+        raise HTTPException(status_code=403, detail="requires_role:ministry")
+    if state.db is None:
+        raise HTTPException(status_code=503, detail="persistence_unavailable")
+
+    from uuid import UUID
+    try:
+        oid = UUID(override_id)
+        await state.db.execute("DELETE FROM gov_policy_overrides WHERE id = $1", oid)
+    except Exception:
+        await state.db.execute("DELETE FROM gov_policy_overrides WHERE id::text = $1", override_id)
+
+    return {"status": "deleted", "id": override_id}
+
+
 @router.get("/policy/export")
 async def gov_policy_export(state: AppState = Depends(get_state)):
     from fastapi import Response

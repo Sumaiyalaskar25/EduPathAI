@@ -272,6 +272,12 @@ export async function updateGovPolicy(
   });
 }
 
+export async function deleteGovPolicy(overrideId: string): Promise<{ status: string; id: string }> {
+  return request<{ status: string; id: string }>(`/v1/gov/policy/${encodeURIComponent(overrideId)}`, {
+    method: "DELETE",
+  });
+}
+
 export async function downloadGovPolicyExport(): Promise<Blob> {
   return requestBlob(`/v1/gov/policy/export`);
 }

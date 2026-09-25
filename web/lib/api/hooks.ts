@@ -238,3 +238,13 @@ export function useUpdateGovPolicy() {
         },
     });
 }
+
+export function useDeleteGovPolicy() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: (overrideId: string) => api.deleteGovPolicy(overrideId),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: ["gov-policy"] });
+        },
+    });
+}
