@@ -283,13 +283,15 @@ export interface StudentProfile {
     enrolled_on: string;
     digilocker_linked: boolean;
     biometric_verified: boolean;
-    verification_mode: "DEVELOPMENT" | "PRODUCTION";
+    verification_mode: "DEVELOPMENT" | "PRODUCTION" | "PRODUCTION_VERIFIED";
   };
   consents: ConsentEntry[];
   decisions: DecisionHistoryItem[];
   security: {
     chain_integrity: string;
     raw_docs_archived: number;
+    ledger_head?: string;
+    compliance?: string;
   };
 }
 
