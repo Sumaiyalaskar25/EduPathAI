@@ -192,6 +192,25 @@ export function useHeiInstitutions() {
     });
 }
 
+export function useInviteHeiInstitution() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: (data: {
+            name: string;
+            short_name: string;
+            city: string;
+            state: string;
+            type?: string;
+            contact_email: string;
+            aishe_code?: string;
+            naac?: string;
+        }) => api.inviteHeiInstitution(data),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: ["hei-institutions"] });
+        },
+    });
+}
+
 export function useDecisionReview(institution: string | undefined) {
     const qc = useQueryClient();
     return useMutation({

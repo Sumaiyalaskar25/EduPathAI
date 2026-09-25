@@ -22,6 +22,7 @@ import type {
   HeiQueueResponse,
   HeiApprovedResponse,
   HeiInstitutionsResponse,
+  HeiInstitution,
   GovAggregate,
   GovMobility,
   GovPolicyResponse,
@@ -222,6 +223,22 @@ export async function getHeiApproved(institution: string): Promise<HeiApprovedRe
 
 export async function getHeiInstitutions(): Promise<HeiInstitutionsResponse> {
   return request<HeiInstitutionsResponse>(`/v1/hei/institutions`);
+}
+
+export async function inviteHeiInstitution(data: {
+  name: string;
+  short_name: string;
+  city: string;
+  state: string;
+  type?: string;
+  contact_email: string;
+  aishe_code?: string;
+  naac?: string;
+}): Promise<{ status: string; message: string; institution: HeiInstitution }> {
+  return request(`/v1/hei/institutions/invite`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }
 
 export async function approveDecision(decisionId: string, notes = ""): Promise<AuditRecord> {

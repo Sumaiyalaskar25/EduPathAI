@@ -416,6 +416,8 @@ export interface HeiInstitution {
   decisionsThisMonth: number;
   recognitionRate: number;
   avgReviewTime: string;
+  aisheCode?: string;
+  nirfTier?: string;
 }
 
 export interface HeiInstitutionsResponse {
