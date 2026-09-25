@@ -304,6 +304,11 @@ export interface CourseDetail {
   competencies: string[];
   recognitionStatus: RecognitionStatus | null;
   mappedFrom: { source_course: string; similarity: number } | null;
+  institution?: string;
+  bloomLevel?: string;
+  ncrfLevel?: string;
+  nodeId?: string;
+  verificationStatus?: string;
 }
 
 export interface BridgeDetail {

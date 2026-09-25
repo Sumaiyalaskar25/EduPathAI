@@ -802,15 +802,7 @@ export function PathwayInfographic({
           onInspectCourse={(code) =>
             setInspectedCourse({
               code,
-              title: `${code} Advanced Course`,
               institution: targetInstitution,
-              credits: 4,
-              bloomLevel: "L4 (Analyze)",
-              outcomes: [
-                "Perform asymptotic and amortized complexity bounds on recursive structures",
-                "Synthesize dynamic programming formulations for multi-stage decisions",
-                "Verify memory invariants in low-level concurrency protocols",
-              ],
             })
           }
         />

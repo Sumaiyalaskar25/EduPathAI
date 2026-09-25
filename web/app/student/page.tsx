@@ -718,15 +718,7 @@ export default function StudentHome() {
               onSelectCourse={(code) =>
                 setSelectedCourse({
                   code,
-                  title: code === "CS-101" ? "Introduction to Computing & Algorithmic Problem Solving" : code,
-                  institution: session.targetInstitution ?? "IIT Kanpur",
-                  credits: 4,
-                  bloomLevel: "L4 (Analyze)",
-                  outcomes: [
-                    "Synthesize algorithmic paradigms for memory manipulation and stack pointer execution",
-                    "Design recursive functions and verify computational complexity bounds",
-                    "Demonstrate proficiency in memory safety, pointer arithmetic, and heap structures",
-                  ],
+                  institution: session.targetInstitution ?? "IIT Bombay",
                 })
               }
             />

@@ -106,15 +106,7 @@ export default function GapAnalysisPage() {
                 onInspectCourse={(code) =>
                   setInspectedCourse({
                     code,
-                    title: `${code} Target Core Syllabus`,
-                    institution: session.targetInstitution ?? "IIT Kanpur",
-                    credits: 4,
-                    bloomLevel: "L4 (Analyze)",
-                    outcomes: [
-                      "Perform dynamic memory architectures and asynchronous execution verification",
-                      "Analyze complexity bounds for recursive graph partitioning algorithms",
-                      "Demonstrate proficiency in low-level concurrency and memory safety invariants",
-                    ],
+                    institution: session.targetInstitution ?? "IIT Bombay",
                   })
                 }
               />

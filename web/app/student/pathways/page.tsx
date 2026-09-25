@@ -370,12 +370,6 @@ export default function PathwaySolverPage() {
                             title: c.title,
                             institution: session.targetInstitution ?? "IIT Bombay",
                             credits: c.credits ?? 4,
-                            bloomLevel: "L4 (Analyze)",
-                            outcomes: [
-                              "Demonstrate mastery of dynamic memory architectures and pointers",
-                              "Design algorithms with provable asymptotic complexity bounds",
-                              "Verify correctness of multi-tier system primitives",
-                            ],
                           })
                         }
                         className="group w-full text-left rounded-2xl border border-slate-200/90 bg-white p-3.5 transition-all hover:border-emerald-300 hover:shadow-md cursor-pointer"
