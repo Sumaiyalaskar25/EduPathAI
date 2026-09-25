@@ -60,6 +60,9 @@ class Pool:
     async def execute(self, query: str, *args) -> str:
         return await self._pool.execute(query, *args)
 
+    async def fetchval(self, query: str, *args, column: int = 0) -> Any:
+        return await self._pool.fetchval(query, *args, column=column)
+
     async def close(self) -> None:
         await self._pool.close()
 

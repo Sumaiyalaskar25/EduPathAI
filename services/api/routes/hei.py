@@ -238,10 +238,13 @@ async def hei_approved(institution: str, state: AppState = Depends(get_state)):
             }
             for m in mappings_rows
         ]
-        bridges_count = await state.db.fetchval(
-            "SELECT COUNT(*) FROM bridges WHERE decision_id = $1",
-            decision_id,
-        ) or 0
+        try:
+            bridges_count = await state.db.fetchval(
+                "SELECT COUNT(*) FROM bridges WHERE decision_id = $1",
+                decision_id,
+            ) or 0
+        except Exception:
+            bridges_count = 0
 
         items.append({
             "id": str(decision_id),
